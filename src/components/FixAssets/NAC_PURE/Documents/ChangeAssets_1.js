@@ -490,6 +490,7 @@ export default function FormsStart() {
                         <Grid item xs={12} sx={{ pt: 2 }}>
                           <Autocomplete
                             freeSolo
+                            autoHighlight
                             name='source_UserCode'
                             size="small"
                             disableClearable={true}
@@ -498,16 +499,25 @@ export default function FormsStart() {
                             onChange={(e, newValue, reason) => {
                               if (!newValue || reason === 'clear') {
                                 const listHeader = [...sendHeader]
-                                listHeader[0]['source'] = null
-                                listHeader[0]['source_Department'] = null
-                                listHeader[0]['source_BU'] = null
+                                listHeader[0]['source'] = ""
+                                listHeader[0]['source_Department'] = ""
+                                listHeader[0]['source_BU'] = ""
                                 setSendHeader(listHeader)
-                              } else {
+                              } else if (users.filter((res) => res.UserCode === newValue)[0]) {
                                 const listHeader = [...sendHeader]
                                 listHeader[0]['source'] = newValue
                                 listHeader[0]['source_Department'] = users.filter((res) => res.UserCode === newValue)[0].DepCode
                                 listHeader[0]['source_BU'] = users.filter((res) => res.UserCode === newValue)[0].BranchID === 901 ? `Center` : `Oil`
                                 setSendHeader(listHeader)
+                              } else {
+                                swal("แจ้งเตือน", "ไม่พบข้อมูล", "error")
+                                  .then(() => {
+                                    const listHeader = [...sendHeader]
+                                    listHeader[0]['source'] = ""
+                                    listHeader[0]['source_Department'] = ""
+                                    listHeader[0]['source_BU'] = ""
+                                    setSendHeader(listHeader)
+                                  })
                               }
                             }}
                             renderInput={(params) => (
@@ -678,6 +688,7 @@ export default function FormsStart() {
                     <StyledTableRow>
                       <StyledTableCell align="center" style={{ maxWidth: '18%' }}>
                         <Autocomplete
+                          autoHighlight
                           freeSolo
                           name='assetsCode'
                           sx={{

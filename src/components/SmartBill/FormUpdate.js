@@ -85,7 +85,9 @@ export default function AddressForm() {
   dayjs.extend(utc);
   dayjs.extend(timezone);
 
+  const dataUser = JSON.parse(localStorage.getItem('data'));
   const [typeCar, setTypeCar] = React.useState('');
+  const [typeGroup, setTypeGroup] = React.useState(0);
   const [carInfoDataCompanny, setCarInfoDataCompanny] = React.useState([]);
   const [carInfoData, setCarInfoData] = React.useState([]);
   const [users, setUsers] = React.useState([]);
@@ -121,6 +123,12 @@ export default function AddressForm() {
     sb_operationid_endmile: '',
     sb_paystatus: '',
     sb_operationid_location: ''
+  }]);
+
+  const [smartBill_Associate, setSmartBill_Associate] = React.useState([{
+    allowance_usercode: '',
+    sb_associate_startdate: '',
+    sb_associate_enddate: ''
   }]);
 
   const [dataFilesCount, setDataFilesCount] = React.useState()
@@ -164,6 +172,16 @@ export default function AddressForm() {
     }
   }
 
+  const handleSubmitAccept = async () => {
+    await Axios.post(config.http + '/SmartBill_AcceptHeader', { sb_code: sb_code }, config.headers)
+      .then(() => {
+        swal("แจ้งเตือน", 'เปลี่ยนแปลงข้อมูลแล้ว', "success", { buttons: false, timer: 2000 })
+          .then(() => {
+            window.location.href = '/SMB/FormUpdate?' + sb_code;
+          });
+      })
+  }
+
   const gettingUsers = async () => {
     // แสดง users ทั้งหมด
     await Axios.get(config.http + '/getsUserForAssetsControl', config.headers)
@@ -173,7 +191,6 @@ export default function AddressForm() {
 
     await Axios.post(config.http + '/SmartBill_SelectAllForms', { sb_code: sb_code }, config.headers)
       .then(async (res) => {
-        console.log(res.data[0][0].reamarks);
         setSmartBill_Header([{
           usercode: res.data[0][0].usercode,
           sb_name: res.data[0][0].sb_name,
@@ -183,6 +200,8 @@ export default function AddressForm() {
           group_status: res.data[0][0].group_status === true ? 1 : 0,
           reamarks: res.data[0][0].reamarks,
         }])
+
+        setTypeGroup(res.data[0][0].group_status === true ? 1 : 0)
 
         const body = { car_infocode: null }
         await Axios.post(config.http + '/SmartBill_CarInfoSearch', body, config.headers)
@@ -218,6 +237,14 @@ export default function AddressForm() {
           }
         }));
 
+        setSmartBill_Associate(res.data[2].map((res_allowance) => {
+          return {
+            allowance_usercode: res_allowance.allowance_usercode,
+            sb_associate_startdate: res_allowance.sb_associate_startdate,
+            sb_associate_enddate: res_allowance.sb_associate_enddate,
+          }
+        }))
+
         setDataFilesCount(res.data[3].map((res_DataFilesCount) => {
           return {
             file: res_DataFilesCount.url,
@@ -237,7 +264,6 @@ export default function AddressForm() {
   return (
     <React.Fragment>
       <CssBaseline />
-
       <Container component="main" maxWidth="md" sx={{ mb: 4 }}>
         <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
           <Typography sx={{ py: 5 }} component="h1" variant="h4" align="center" className="Header-Forms">
@@ -277,6 +303,7 @@ export default function AddressForm() {
                 </Grid>
                 <Grid item xs={12} sm={2}>
                   <Autocomplete
+autoHighlight
                     id="free-solo-demo"
                     freeSolo
                     name="usercode"
@@ -408,6 +435,7 @@ export default function AddressForm() {
                 {typeCar === 1 || typeCar === "1" ? (
                   <Grid item xs={6} sm={6}>
                     <Autocomplete
+autoHighlight
                       id="free-solo-demo"
                       freeSolo
                       disabled
@@ -466,6 +494,7 @@ export default function AddressForm() {
                 ) : typeCar === 0 || typeCar === "0" ? (
                   <Grid item xs={6} sm={6}>
                     <Autocomplete
+autoHighlight
                       id="free-solo-demo"
                       freeSolo
                       disabled
@@ -748,7 +777,7 @@ export default function AddressForm() {
                                   WebkitTextFillColor: "#000000",
                                 }
                               }}
-                              value={row.sb_operationid_startdate ? dayjs(row.sb_operationid_startdate) : null}
+                              value={row.sb_operationid_startdate ? dayjs(row.sb_operationid_startdate) : undefined}
                               onChange={(newValue) => {
                                 const list = [...smartBill_Operation]
                                 list[index]['sb_operationid_startdate'] = newValue.format('YYYY-MM-DD HH:mm:ss')
@@ -774,7 +803,7 @@ export default function AddressForm() {
                                 WebkitTextFillColor: "#000000",
                               },
                             }}
-                            value={index === 0 ? row.sb_operationid_startmile : smartBill_Operation[index - 1].sb_operationid_endmile}
+                            value={row.sb_operationid_startmile}
                             onChange={(e) => {
                               const list = [...smartBill_Operation]
                               if (index === 0) {
@@ -831,7 +860,7 @@ export default function AddressForm() {
                                   WebkitTextFillColor: "#000000",
                                 }
                               }}
-                              value={row.sb_operationid_enddate ? dayjs(row.sb_operationid_enddate) : null}
+                              value={row.sb_operationid_enddate ? dayjs(row.sb_operationid_enddate) : undefined}
                               onChange={(newValue) => {
                                 const list = [...smartBill_Operation]
                                 list[index]['sb_operationid_enddate'] = newValue.format('YYYY-MM-DD HH:mm:ss')
@@ -905,6 +934,135 @@ export default function AddressForm() {
                     </React.Fragment>
                   ))}
                 </Grid>
+                {/* <Grid item xs={12}>
+                  <FormControl sx={{ pl: 1 }}>
+                    <RadioGroup
+                      row
+                      value={smartBill_Header[0].group_status}
+                      onChange={(event) => {
+                        const list = [...smartBill_Header]
+                        list[0].group_status = event.target.value
+                        setSmartBill_Header(list)
+                        setTypeGroup(event.target.value)
+                      }}
+                    >
+                      <FormControlLabel value={0} control={<Radio />} label="ไม่มีผู้ร่วมเดินทาง" />
+                      <FormControlLabel value={1} control={<Radio />} label="มีผู้ร่วมเดินทาง" />
+                    </RadioGroup>
+                  </FormControl>
+                </Grid>
+                {typeGroup === "1" || typeGroup === 1 ? (
+                  <React.Fragment>
+                    <Grid item xs={12}>
+                      <Stack
+                        direction="row"
+                        justifyContent="flex-start"
+                        alignItems="flex-start"
+                        spacing={2}
+                        sx={{ pb: 1 }}
+                      >
+                        <Button variant="outlined" onClick={handleServiceAddGroupJoin} startIcon={<PostAddIcon />}>
+                          Add List
+                        </Button>
+                        <Button variant="outlined" color="error" disabled={smartBill_Associate.length === 1 ? true : false} onClick={handleServiceRemoveGroupJoin} startIcon={<PostAddIcon />}>
+                          Delete List
+                        </Button>
+                      </Stack>
+                    </Grid>
+                    {smartBill_Associate.map((row, index) => (
+                      <React.Fragment>
+                        <Grid item xs={12}>
+                          <Divider textAlign="center" sx={{ py: 1 }}>ผู้ร่วมเดินทางคนที่ {index + 1}</Divider>
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                          <Autocomplete
+autoHighlight
+                            disabled
+                            sx={{
+                              "& .MuiInputBase-input.Mui-disabled": {
+                                WebkitTextFillColor: "#000000",
+                              },
+                            }}
+                            id="free-solo-demo"
+                            freeSolo
+                            key={index}
+                            name="initialJoin"
+                            value={smartBill_Associate[index].allowance_usercode}
+                            options={users.map((option) => option.UserCode)}
+                            onChange={(event, newValue, reason) => {
+                              if (reason === 'clear') {
+                                const list = [...smartBill_Associate]
+                                list[index]['allowance_usercode'] = ''
+                                list[index]['sb_associate_startdate'] = ''
+                                list[index]['sb_associate_enddate'] = ''
+                                setSmartBill_Associate(list)
+                              } else {
+                                const list = [...smartBill_Associate]
+                                list[index]['allowance_usercode'] = newValue
+                                setSmartBill_Associate(list)
+                              }
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label={`ผู้ร่วมเดินทางคนที่ ${index + 1} (initial)`}
+                                fullWidth
+                              />
+                            )}
+                          />
+                        </Grid>
+                        <Grid item xs={6} sm={4}>
+                          <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DateTimePicker
+                              disabled
+                              sx={{
+                                width: '100%',
+                                "& .MuiInputBase-input.Mui-disabled": {
+                                  WebkitTextFillColor: "#000000",
+                                }
+                              }}
+                              format="YYYY-MM-DD HH:mm"
+                              name="sb_associate_startdate"
+                              key={index}
+                              label={`วันที่ออกเดินทาง`}
+                              value={row.sb_associate_startdate === '' ? undefined : row.sb_associate_startdate}
+                              onChange={(newValue) => {
+                                const list = [...smartBill_Associate]
+                                list[index]['sb_associate_startdate'] = `${newValue.format('YYYY-MM-DD')}T${newValue.format('HH:mm:ss')}`
+                                setSmartBill_Associate(list)
+                              }}
+                              ampm={false}
+                            />
+                          </LocalizationProvider>
+                        </Grid>
+                        <Grid item xs={6} sm={4}>
+                          <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DateTimePicker
+                              disabled
+                              sx={{
+                                width: '100%',
+                                "& .MuiInputBase-input.Mui-disabled": {
+                                  WebkitTextFillColor: "#000000",
+                                }
+                              }}
+                              format="YYYY-MM-DD HH:mm"
+                              name="sb_associate_enddate"
+                              key={index}
+                              label={`วันที่สิ้นสุดเดินทาง`}
+                              value={row.sb_associate_enddate === '' ? undefined : row.sb_associate_enddate}
+                              onChange={(newValue) => {
+                                const list = [...smartBill_Associate]
+                                list[index]['sb_associate_enddate'] = `${newValue.format('YYYY-MM-DD')}T${newValue.format('HH:mm:ss')}`
+                                setSmartBill_Associate(list)
+                              }}
+                              ampm={false}
+                            />
+                          </LocalizationProvider>
+                        </Grid>
+                      </React.Fragment>
+                    ))}
+                  </React.Fragment>
+                ) : null} */}
                 <Grid item xs={12}>
                   <TextField
                     required
@@ -960,7 +1118,7 @@ export default function AddressForm() {
                   <ImageList cols={6} variant="quilted">
                     {dataFilesCount ? dataFilesCount.map((item, index) => (
                       <ImageListItem key={item.img}>
-                        <a target="_blank" href={item.file} rel="noreferrer">
+                        <a target="_blank" href={item.file}>
                           <img
                             src={item.file}
                             srcSet={item.file}
@@ -1006,13 +1164,15 @@ export default function AddressForm() {
               >
                 Update
               </Button>
-              {/* <Button
+              <Button
                 variant="contained"
-                onClick={handleSubmit}
+                color="success"
+                disabled={dataUser.DepCode === '101GAD' ? false : true}
+                onClick={handleSubmitAccept}
                 sx={{ mt: 3, ml: 1 }}
               >
-                Next
-              </Button> */}
+                Accept
+              </Button>
             </Box>
           </React.Fragment>
         </Paper>

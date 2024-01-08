@@ -118,10 +118,10 @@ export default function History_of_assets() {
   const [filter, setFilter] = React.useState({ "nacdtl_assetsCode": '', "name": '', "source_approve_userid": '', "update_date": '', "nac_code": '' })
 
 
-  const filter_Code = async (e, index) => {
+  const filter_Code = async (e, newValue, reason) => {
 
     var filterJSON = {
-      nacdtl_assetsCode: e.target.innerText
+      nacdtl_assetsCode: newValue
       , name: filter.name
       , source_approve_userid: filter.source_approve_userid
       , update_date: filter.update_date
@@ -157,12 +157,12 @@ export default function History_of_assets() {
     });
   }
 
-  const filter_CreateBy = async (e, index) => {
+  const filter_CreateBy = async (e, newValue, reason) => {
 
     var filterJSON = {
       nacdtl_assetsCode: filter.nacdtl_assetsCode
       , name: filter.name
-      , source_approve_userid: e.target.innerText
+      , source_approve_userid: newValue
       , update_date: filter.update_date
       , nac_code: filter.nac_code
     }
@@ -196,14 +196,14 @@ export default function History_of_assets() {
     });
   }
 
-  const filter_TabCode = async (e, index) => {
+  const filter_TabCode = async (e, newValue, reason) => {
 
     var filterJSON = {
       nacdtl_assetsCode: filter.nacdtl_assetsCode
       , name: filter.name
       , source_approve_userid: filter.source_approve_userid
       , update_date: filter.update_date
-      , nac_code: e.target.innerText
+      , nac_code: newValue
     }
 
     setFilter(filterJSON);
@@ -235,13 +235,13 @@ export default function History_of_assets() {
     });
   }
 
-  const filter_CreateDate = async (e, index) => {
+  const filter_CreateDate = async (e, newValue, reason) => {
 
     var filterJSON = {
       nacdtl_assetsCode: filter.nacdtl_assetsCode
       , name: filter.name
       , source_approve_userid: filter.source_approve_userid
-      , update_date: e.target.innerText
+      , update_date: newValue
       , nac_code: filter.nac_code
     }
 
@@ -274,11 +274,11 @@ export default function History_of_assets() {
     });
   }
 
-  const filter_Name = async (e, index) => {
+  const filter_Name = async (e, newValue, reason) => {
 
     var filterJSON = {
       nacdtl_assetsCode: filter.nacdtl_assetsCode
-      , name: e.target.innerText
+      , name: newValue
       , source_approve_userid: filter.source_approve_userid
       , update_date: filter.update_date
       , nac_code: filter.nac_code
@@ -408,12 +408,13 @@ export default function History_of_assets() {
           <Container maxWidth="1000px" sx={{ pt: 3, pb: 3 }}>
             <Stack spacing={{ xs: 1, sm: 2 }} direction="row" useFlexGap flexWrap="wrap">
               <Autocomplete
+                autoHighlight
                 disablePortal
                 id="combo-box-demo"
                 size='small'
                 sx={{ flexGrow: 1, padding: 1 }}
                 value={filter.nacdtl_assetsCode}
-                onChange={(e) => filter_Code(e)}
+                onChange={(e, newValue, reason) => filter_Code(e, newValue, reason)}
                 options={
                   dataHistory ? dataHistory.map((res) => res.nacdtl_assetsCode).filter(x => !!x)
                     .reduce((x, y) => x.includes(y) ? x : [...x, y], []) : []
@@ -421,12 +422,13 @@ export default function History_of_assets() {
                 renderInput={(params) => <TextField label="รหัสทรัพย์สิน" {...params} />}
               />
               <Autocomplete
+                autoHighlight
                 disablePortal
                 id="combo-box-demo"
                 size='small'
                 sx={{ flexGrow: 1, padding: 1 }}
                 value={filter.name}
-                onChange={(e) => filter_Name(e)}
+                onChange={(e, newValue, reason) => filter_Name(e, newValue, reason)}
                 options={
                   dataHistory ? dataHistory.map((res) => res.name).filter(x => !!x)
                     .reduce((x, y) => x.includes(y) ? x : [...x, y], []) : []
@@ -434,12 +436,13 @@ export default function History_of_assets() {
                 renderInput={(params) => <TextField label="ชื่อหัวข้อ" {...params} />}
               />
               <Autocomplete
+                autoHighlight
                 disablePortal
                 id="combo-box-demo"
                 size='small'
                 sx={{ flexGrow: 1, padding: 1 }}
                 value={filter.source_approve_userid}
-                onChange={(e) => filter_CreateBy(e)}
+                onChange={(e, newValue, reason) => filter_CreateBy(e, newValue, reason)}
                 options={
                   dataHistory ? dataHistory.map((res) => res.source_approve_userid).filter(x => !!x)
                     .reduce((x, y) => x.includes(y) ? x : [...x, y], []) : []
@@ -447,12 +450,13 @@ export default function History_of_assets() {
                 renderInput={(params) => <TextField label="ผู้อนุมัติรายการ" {...params} />}
               />
               <Autocomplete
+                autoHighlight
                 disablePortal
                 id="combo-box-demo"
                 size='small'
                 sx={{ flexGrow: 1, padding: 1 }}
                 value={filter.update_date}
-                onChange={(e) => filter_CreateDate(e)}
+                onChange={(e, newValue, reason) => filter_CreateDate(e, newValue, reason)}
                 options={
                   dataHistory ? dataHistory.map((res) => res.update_date).filter(x => !!x)
                     .reduce((x, y) => x.includes(y) ? x : [...x, y], []) : []
@@ -460,12 +464,13 @@ export default function History_of_assets() {
                 renderInput={(params) => <TextField label="วันที่ปิดรายการ" {...params} />}
               />
               <Autocomplete
+                autoHighlight
                 disablePortal
                 id="combo-box-demo"
                 size='small'
                 sx={{ flexGrow: 1, padding: 1 }}
                 value={filter.nac_code}
-                onChange={(e) => filter_TabCode(e)}
+                onChange={(e, newValue, reason) => filter_TabCode(e, newValue, reason)}
                 options={
                   dataHistory ? dataHistory.map((res) => res.nac_code).filter(x => !!x)
                     .reduce((x, y) => x.includes(y) ? x : [...x, y], []) : []

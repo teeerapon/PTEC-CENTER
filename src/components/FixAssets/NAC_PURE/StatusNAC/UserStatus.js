@@ -186,8 +186,8 @@ export default function History_of_assets() {
     , 'เปลี่ยนแปลงรายละเอียดทรัพย์สิน'
   ]
 
-  const filteringNAC_Code = async (e, index) => {
-    const NAC_Code = e.target.innerText
+  const filteringNAC_Code = async (e, newValue, reason, index) => {
+    const NAC_Code = newValue
 
     var filter = {
       nac_code: NAC_Code
@@ -232,8 +232,8 @@ export default function History_of_assets() {
     }
   }
 
-  const filteringNAC_Headers = async (e, index) => {
-    const NAC_Headers = e.target.innerText
+  const filteringNAC_Headers = async (e, newValue, reason, index) => {
+    const NAC_Headers = newValue
 
     var filter = {
       nac_code: filterNAC.nac_code
@@ -277,8 +277,8 @@ export default function History_of_assets() {
     }
   }
 
-  const filteringNAC_statusName = async (e, index) => {
-    const NAC_statusName = e.target.innerText
+  const filteringNAC_statusName = async (e, newValue, reason, index) => {
+    const NAC_statusName = newValue
 
     var filter = {
       nac_code: filterNAC.nac_code
@@ -322,8 +322,8 @@ export default function History_of_assets() {
     }
   }
 
-  const filteringNAC_Source_userid = async (e, index) => {
-    const NAC_Source_userid = e.target.innerText
+  const filteringNAC_Source_userid = async (e, newValue, reason, index) => {
+    const NAC_Source_userid = newValue
 
     var filter = {
       nac_code: filterNAC.nac_code
@@ -367,8 +367,8 @@ export default function History_of_assets() {
     }
   }
 
-  const filteringNAC_Des_userid = async (e, index) => {
-    const NAC_Des_userid = e.target.innerText
+  const filteringNAC_Des_userid = async (e, newValue, reason, index) => {
+    const NAC_Des_userid = newValue
 
     var filter = {
       nac_code: filterNAC.nac_code
@@ -768,7 +768,7 @@ export default function History_of_assets() {
                 size='small'
                 sx={{ flexGrow: 1, padding: 1 }}
                 value={filterNAC.nac_code}
-                onChange={(e) => filteringNAC_Code(e)}
+                onChange={(e, newValue, reason, index) => filteringNAC_Code(e, newValue, reason, index)}
                 options={selectNAC ? selectNAC.map((res) => res.nac_code) : []}
                 renderInput={(params) => <TextField label="เลขที่ NAC" {...params} />}
               />
@@ -780,7 +780,7 @@ export default function History_of_assets() {
                 size='small'
                 sx={{ flexGrow: 1, padding: 1 }}
                 value={filterNAC.name}
-                onChange={(e) => filteringNAC_Headers(e)}
+                onChange={(e, newValue, reason, index) => filteringNAC_Headers(e, newValue, reason, index)}
                 options={nacHeaders}
                 renderInput={(params) => <TextField label="หัวข้อรายการ" {...params} />}
               />
@@ -792,7 +792,7 @@ export default function History_of_assets() {
                 size='small'
                 sx={{ flexGrow: 1, padding: 1 }}
                 value={filterNAC.source_userid}
-                onChange={(e) => filteringNAC_Source_userid(e)}
+                onChange={(e, newValue, reason, index) => filteringNAC_Source_userid(e, newValue, reason, index)}
                 options={
                   selectNAC ? selectNAC.map((res) => res.source_userid).filter(x => !!x)
                     .reduce((x, y) => x.includes(y) ? x : [...x, y], []) : []
@@ -807,7 +807,7 @@ export default function History_of_assets() {
                 size='small'
                 sx={{ flexGrow: 1, padding: 1 }}
                 value={filterNAC.des_userid}
-                onChange={(e) => filteringNAC_Des_userid(e)}
+                onChange={(e, newValue, reason, index) => filteringNAC_Des_userid(e, newValue, reason, index)}
                 options={
                   selectNAC ? selectNAC.map((res) => res.des_userid).filter(x => !!x)
                     .reduce((x, y) => x.includes(y) ? x : [...x, y], []) : []
@@ -822,7 +822,7 @@ export default function History_of_assets() {
                 size='small'
                 sx={{ flexGrow: 1, padding: 1 }}
                 value={filterNAC.status_name}
-                onChange={(e) => filteringNAC_statusName(e)}
+                onChange={(e, newValue, reason, index) => filteringNAC_statusName(e, newValue, reason, index)}
                 options={nacStatusName.reduce((x, y) => x.includes(y) ? x : [...x, y], [])}
                 renderInput={(params) => <TextField label="สถานะ" {...params} />}
               />

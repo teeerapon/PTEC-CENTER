@@ -320,6 +320,7 @@ export default function Permission_NAC() {
       <ThemeProvider theme={theme}>
         <Container component="main" maxWidth="lg" sx={{ pt: 3, pb: 3 }}>
           <Autocomplete
+                     autoHighlight
             freeSolo
             sx={{ pb: 2 }}
             size="small"

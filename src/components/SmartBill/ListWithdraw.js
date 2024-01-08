@@ -13,7 +13,6 @@ import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArticleIcon from '@mui/icons-material/Article';
 import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { styled } from '@mui/system';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -21,8 +20,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import CloseIcon from '@mui/icons-material/Close';
 import Grid from '@mui/material/Grid';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import dayjs from "dayjs";
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 const StyledGridOverlay = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -211,31 +210,7 @@ export default function AddressForm() {
   const columns = [
     { field: 'sbw_code', headerName: 'เลขที่ดำเนินการ', flex: 1, minWidth: 100 },
     { field: 'ownercode', headerName: 'ผู้ทำรายการ', flex: 1, minWidth: 80 },
-    {
-      field: 'createdate',
-      headerName: 'วันที่ทำรายการ',
-      flex: 1,
-      minWidth: 170,
-      renderCell: (params) => {
-        return (
-          <React.Fragment>
-            {params.row.createdate ?
-              <Stack
-                direction="row"
-                justifyContent="center"
-                alignItems="center"
-                spacing={1}
-              >
-                <CalendarMonthIcon />
-                <Typography sx={{ fontSize: '1rem' }}>
-                  {dayjs(params.row.createdate).format('YYYY-MM-DD HH:mm') || ''}
-                </Typography>
-              </Stack>
-              : null}
-          </React.Fragment>
-        );
-      }
-    },
+    { field: 'createdate', headerName: 'วันที่ทำรายการ', flex: 1, minWidth: 150 },
     { field: 'car_infocode', headerName: 'บะเทียนรถ', flex: 1, minWidth: 120 },
     { field: 'car_band', headerName: 'ยี่ห้อ', flex: 1, minWidth: 100 },
     { field: 'car_tier', headerName: 'ชื่อรุ่น', flex: 1, minWidth: 200 },
@@ -284,19 +259,89 @@ export default function AddressForm() {
     return (
       <React.Fragment>
         <CssBaseline />
-
-        <Container component="main" maxWidth="lg" fixed sx={{ mb: 4 }}>
+        <Container component="main" maxWidth="xl" fixed sx={{ mb: 4 }}>
           <Box sx={{ py: 5 }}>
+            <Grid
+              container
+              direction="row"
+              justifyContent="center"
+              alignItems="flex-start"
+              spacing={1}
+            >
+              <Grid item xs>
+                <Autocomplete
+autoHighlight
+                  disablePortal
+                  id="combo-box-demo"
+                  size='small'
+                  sx={{ py: 1 }}
+                  onChange={(e, newInputValue, reason) => {
+                    if (reason === 'clear') {
+                      SelectHeaders();
+                    } else {
+                      setRowHeader(rowHeader.filter((res, index) => res.sbw_code === newInputValue))
+                    }
+                  }}
+                  options={
+                    rowHeader ? rowHeader.map((res) => res.sbw_code).filter(x => !!x)
+                      .reduce((x, y) => x.includes(y) ? x : [...x, y], []) : []
+                  }
+                  renderInput={(params) => <TextField label="เลขที่ดำเนินการ" {...params} />}
+                />
+              </Grid>
+              <Grid item xs>
+                <Autocomplete
+autoHighlight
+                  disablePortal
+                  id="combo-box-demo"
+                  size='small'
+                  sx={{ py: 1 }}
+                  onChange={(e, newInputValue, reason) => {
+                    if (reason === 'clear') {
+                      SelectHeaders();
+                    } else {
+                      setRowHeader(rowHeader.filter((res, index) => res.ownercode === newInputValue))
+                    }
+                  }}
+                  options={
+                    rowHeader ? rowHeader.map((res) => res.ownercode).filter(x => !!x)
+                      .reduce((x, y) => x.includes(y) ? x : [...x, y], []) : []
+                  }
+                  renderInput={(params) => <TextField label="ผู้ทำรายการ" {...params} />}
+                />
+              </Grid>
+              <Grid item xs>
+                <Autocomplete
+autoHighlight
+                  disablePortal
+                  id="combo-box-demo"
+                  size='small'
+                  sx={{ py: 1 }}
+                  onChange={(e, newInputValue, reason) => {
+                    if (reason === 'clear') {
+                      SelectHeaders();
+                    } else {
+                      setRowHeader(rowHeader.filter((res, index) => res.car_infocode === newInputValue))
+                    }
+                  }}
+                  options={
+                    rowHeader ? rowHeader.map((res) => res.car_infocode).filter(x => !!x)
+                      .reduce((x, y) => x.includes(y) ? x : [...x, y], []) : []
+                  }
+                  renderInput={(params) => <TextField label="ทะเบียนรถ" {...params} />}
+                />
+              </Grid>
+            </Grid>
             <DataGrid
               rows={rowHeader}
               columns={columns}
               getRowId={(res) => res.sbw_code}
+              getRowHeight={() => 'auto'}
               initialState={{
                 pagination: {
                   paginationModel: { page: 0, pageSize: 10 },
                 },
               }}
-              getRowHeight={() => 'auto'}
               sx={{
                 '&.MuiDataGrid-root--densityStandard .MuiDataGrid-cell': {
                   py: '0.25rem',

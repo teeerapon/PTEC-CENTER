@@ -126,6 +126,7 @@ export default function AddressForm() {
   const [users, setUsers] = React.useState([]);
   const queryString = window.location.search;
   const sbw_code = queryString.split('?')[1] ? queryString.split('?')[1] : null
+  const [opensbw, setOpensbw] = React.useState(false);
   const [openDialogPayTrue, setOpenDialogPayTrue] = React.useState(false);
   const [openAllowance, setOpenAllowance] = React.useState(false);
   const [openCostHotel, setOpenCostHotel] = React.useState(false);
@@ -636,9 +637,21 @@ export default function AddressForm() {
     await Axios.post(config.http + '/SmartBill_WithdrawDtl_DeleteCategory', body, config.headers)
       .then((response) => {
         if (response.data && response.data[0].length > 0) {
-          const list = [...smartBill_CostAllowance];
-          list.splice(index, 1);
-          setSmartBill_CostAllowance(list);
+          setSmartBill_CostAllowance(response.data[0].map((res) => {
+            return {
+              sbwdtl_id: res.sbwdtl_id,
+              cost_id: res.cost_id,
+              id: res.id,
+              category_id: res.category_id,
+              count: (new Date(res.enddate) - new Date(res.startdate)) / (1000 * 3600),
+              startdate: res.startdate,
+              enddate: res.enddate,
+              usercode: res.usercode,
+              foodStatus: res.foodStatus === true ? 1 : 0,
+              amount: res.foodStatus === true ? res.amount * 2 : res.amount,
+            }
+          }))
+          gettingData();
         }
       })
   };
@@ -968,6 +981,13 @@ export default function AddressForm() {
   };
 
   // Basic
+  const handleClickOpensbw = () => {
+    setOpensbw(true);
+  };
+
+  const handleClosesbw = () => {
+    setOpensbw(false);
+  };
 
   const gettingData = async () => {
     const headers = {
@@ -1125,7 +1145,6 @@ export default function AddressForm() {
     return (
       <React.Fragment>
         <CssBaseline />
-
         <Container component="main" sx={{ minWidth: window.innerWidth * 0.9 }}>
           <Root component={Paper} sx={{ my: 5 }}>
             <Button
@@ -1183,6 +1202,7 @@ export default function AddressForm() {
                 <TableRow>
                   <TableCell align="left" colSpan={3}>
                     <Autocomplete
+                      autoHighlight
                       id="free-solo-demo"
                       freeSolo
                       name="ownercode"
@@ -1215,7 +1235,8 @@ export default function AddressForm() {
                       <DateTimePicker
                         format="YYYY-MM-DD HH:mm"
                         disabled
-                        value={dayjs(new Date().toLocaleString().replace(",", "").replace(/:.. /, " "))}
+                        value={dayjs()}
+                        timezone='UTC'
                         ampm={false}
                       />
                     </LocalizationProvider>
@@ -1260,6 +1281,7 @@ export default function AddressForm() {
                       (
                         <Grid item xs={6} sm={6}>
                           <Autocomplete
+                            autoHighlight
                             id="free-solo-demo"
                             freeSolo
                             options={(carInfoDataCompanny ? carInfoDataCompanny : carInfoData).map((option) => option.car_infocode)}
@@ -1531,7 +1553,6 @@ export default function AddressForm() {
     return (
       <React.Fragment>
         <CssBaseline />
-
         <Container component="main" maxWidth="lg" sx={{ minWidth: window.innerWidth * 0.9 }}>
           <Grid
             container
@@ -1619,6 +1640,7 @@ export default function AddressForm() {
                 <TableRow>
                   <TableCell align="center" colSpan={3}>
                     <Autocomplete
+                      autoHighlight
                       id="free-solo-demo"
                       freeSolo
                       disabled
@@ -1711,6 +1733,7 @@ export default function AddressForm() {
                       (
                         <Grid item xs={6} sm={6}>
                           <Autocomplete
+                            autoHighlight
                             id="free-solo-demo"
                             freeSolo
                             disabled
@@ -1823,14 +1846,14 @@ export default function AddressForm() {
               <TableBody>
                 {smartBill_WithdrawDtl.map((res, index) => (
                   <TableRow>
-                    <TableCell align="center">{dayjs(res.sbwdtl_operationid_startdate).format('YYYY-MM-DD HH:mm:ss')}</TableCell>
-                    <TableCell align="center">{dayjs(res.sbwdtl_operationid_enddate).format('YYYY-MM-DD HH:mm:ss')}</TableCell>
+                    <TableCell align="center">{dayjs(res.sbwdtl_operationid_startdate).format('YYYY-MM-DD HH:mm')}</TableCell>
+                    <TableCell align="center">{dayjs(res.sbwdtl_operationid_enddate).format('YYYY-MM-DD HH:mm')}</TableCell>
                     <TableCell >{res.remark}</TableCell>
-                    <TableCell align="center">{res.sbwdtl_operationid_startmile}</TableCell>
-                    <TableCell align="center">{res.sbwdtl_operationid_endmile}</TableCell>
+                    <TableCell align="center">{res.sbwdtl_operationid_startmile.toLocaleString("en-US")}</TableCell>
+                    <TableCell align="center">{res.sbwdtl_operationid_endmile.toLocaleString("en-US")}</TableCell>
                     <TableCell align="center">{res.sum_mile.toLocaleString("en-US")}</TableCell>
                     <TableCell align="center">{res.price_rateoil.toLocaleString("en-US")}</TableCell>
-                    <TableCell align="center">{res.oilBath.toLocaleString("en-US")}</TableCell>
+                    <TableCell align="center">{res.sb_paystatus === false ? 0 : res.oilBath.toLocaleString("en-US")}</TableCell>
                     <TableCell align="center">
                       <Button
                         variant="text"
@@ -1845,7 +1868,7 @@ export default function AddressForm() {
                           }
                         }}
                       >
-                        {(res.amouthTrueOil === '0' || res.amouthTrueOil === 0) ? '0' : res.amouthTrueOil.toLocaleString("en-US")}
+                        {(res.amouthTrueOil === '0' || res.amouthTrueOil === 0 || res.sb_paystatus === false) ? '0' : res.amouthTrueOil.toLocaleString("en-US")}
                       </Button>
                     </TableCell>
                     <TableCell align="center">
@@ -1862,7 +1885,7 @@ export default function AddressForm() {
                           }
                         }}
                       >
-                        {(res.amouthAllowance === '0' || res.amouthAllowance === 0) ? '0' : res.amouthAllowance.toLocaleString("en-US")}
+                        {(res.amouthAllowance === '0' || res.amouthAllowance === 0 || res.sb_paystatus === false) ? '0' : res.amouthAllowance.toLocaleString("en-US")}
                       </Button>
                     </TableCell>
                     <TableCell align="center">
@@ -1879,7 +1902,7 @@ export default function AddressForm() {
                           }
                         }}
                       >
-                        {(res.amouthHotel === '0' || res.amouthHotel === 0) ? '0' : res.amouthHotel.toLocaleString("en-US")}
+                        {(res.amouthHotel === '0' || res.amouthHotel === 0 || res.sb_paystatus === false) ? '0' : res.amouthHotel.toLocaleString("en-US")}
                       </Button>
                     </TableCell>
                     <TableCell>
@@ -1896,7 +1919,7 @@ export default function AddressForm() {
                           }
                         }}
                       >
-                        {(res.amouthRush === '0' || res.amouthRush === 0) ? '0' : res.amouthRush.toLocaleString("en-US")}
+                        {(res.amouthRush === '0' || res.amouthRush === 0 || res.sb_paystatus === false) ? '0' : res.amouthRush.toLocaleString("en-US")}
                       </Button>
                     </TableCell>
                     <TableCell>
@@ -1913,10 +1936,10 @@ export default function AddressForm() {
                           }
                         }}
                       >
-                        {(res.amouthother === '0' || res.amouthother === 0) ? '0' : res.amouthother.toLocaleString("en-US")}
+                        {(res.amouthother === '0' || res.amouthother === 0 || res.sb_paystatus === false) ? '0' : res.amouthother.toLocaleString("en-US")}
                       </Button>
                     </TableCell>
-                    <TableCell align="center">{res.amouthAll.toLocaleString("en-US")}</TableCell>
+                    <TableCell align="center">{res.sb_paystatus === false ? 0 : res.amouthAll.toLocaleString("en-US")}</TableCell>
                     <TableCell>
                       <Button
                         key={index}
@@ -1938,8 +1961,8 @@ export default function AddressForm() {
                   <TableCell align="center" colSpan={1}>
                     <b>
                       {smartBill_WithdrawDtl[0].sbwdtl_id ? smartBill_WithdrawDtl.map(function (elt) {
-                        return (/^\d+\.\d+$/.test(elt.oilBath) || /^\d+$/.test(elt.oilBath)) ?
-                          parseFloat(elt.oilBath) : parseFloat(elt.oilBath);
+                        return (/^\d+\.\d+$/.test(elt.sb_paystatus === false ? 0 : elt.oilBath) || /^\d+$/.test(elt.sb_paystatus === false ? 0 : elt.oilBath)) ?
+                          parseFloat(elt.sb_paystatus === false ? 0 : elt.oilBath) : parseFloat(elt.sb_paystatus === false ? 0 : elt.oilBath);
                       }).reduce(function (a, b) { // sum all resulting numbers
                         return a + b
                       }).toLocaleString("en-US") : ''}
@@ -1948,8 +1971,8 @@ export default function AddressForm() {
                   <TableCell align="center" colSpan={1}>
                     <b>
                       {smartBill_WithdrawDtl[0].sbwdtl_id ? smartBill_WithdrawDtl.map(function (elt) {
-                        return (/^\d+\.\d+$/.test(elt.amouthTrueOil) || /^\d+$/.test(elt.amouthTrueOil)) ?
-                          parseFloat(elt.amouthTrueOil) : parseFloat(elt.amouthTrueOil);
+                        return (/^\d+\.\d+$/.test(elt.sb_paystatus === false ? 0 : elt.amouthTrueOil) || /^\d+$/.test(elt.sb_paystatus === false ? 0 : elt.amouthTrueOil)) ?
+                          parseFloat(elt.sb_paystatus === false ? 0 : elt.amouthTrueOil) : parseFloat(elt.sb_paystatus === false ? 0 : elt.amouthTrueOil);
                       }).reduce(function (a, b) { // sum all resulting numbers
                         return a + b
                       }).toLocaleString("en-US") : 0}
@@ -1958,8 +1981,8 @@ export default function AddressForm() {
                   <TableCell align="center" colSpan={1}>
                     <b>
                       {smartBill_WithdrawDtl[0].sbwdtl_id ? smartBill_WithdrawDtl.map(function (elt) {
-                        return (/^\d+\.\d+$/.test(elt.amouthAllowance) || /^\d+$/.test(elt.amouthAllowance)) ?
-                          parseFloat(elt.amouthAllowance) : parseFloat(elt.amouthAllowance);
+                        return (/^\d+\.\d+$/.test(elt.sb_paystatus === false ? 0 : elt.amouthAllowance) || /^\d+$/.test(elt.sb_paystatus === false ? 0 : elt.amouthAllowance)) ?
+                          parseFloat(elt.sb_paystatus === false ? 0 : elt.amouthAllowance) : parseFloat(elt.sb_paystatus === false ? 0 : elt.amouthAllowance);
                       }).reduce(function (a, b) { // sum all resulting numbers
                         return a + b
                       }).toLocaleString("en-US") : 0}
@@ -1968,8 +1991,8 @@ export default function AddressForm() {
                   <TableCell align="center" colSpan={1}>
                     <b>
                       {smartBill_WithdrawDtl[0].sbwdtl_id ? smartBill_WithdrawDtl.map(function (elt) {
-                        return (/^\d+\.\d+$/.test(elt.amouthHotel) || /^\d+$/.test(elt.amouthHotel)) ?
-                          parseFloat(elt.amouthHotel) : parseFloat(elt.amouthHotel);
+                        return (/^\d+\.\d+$/.test(elt.sb_paystatus === false ? 0 : elt.amouthHotel) || /^\d+$/.test(elt.sb_paystatus === false ? 0 : elt.amouthHotel)) ?
+                          parseFloat(elt.sb_paystatus === false ? 0 : elt.amouthHotel) : parseFloat(elt.sb_paystatus === false ? 0 : elt.sb_paystatus === false ? 0 : elt.amouthHotel);
                       }).reduce(function (a, b) { // sum all resulting numbers
                         return a + b
                       }).toLocaleString("en-US") : 0}
@@ -1978,8 +2001,8 @@ export default function AddressForm() {
                   <TableCell align="center" colSpan={1}>
                     <b>
                       {smartBill_WithdrawDtl[0].sbwdtl_id ? smartBill_WithdrawDtl.map(function (elt) {
-                        return (/^\d+\.\d+$/.test(elt.amouthRush) || /^\d+$/.test(elt.amouthRush)) ?
-                          parseFloat(elt.amouthRush) : parseFloat(elt.amouthRush);
+                        return (/^\d+\.\d+$/.test(elt.sb_paystatus === false ? 0 : elt.amouthRush) || /^\d+$/.test(elt.sb_paystatus === false ? 0 : elt.amouthRush)) ?
+                          parseFloat(elt.sb_paystatus === false ? 0 : elt.amouthRush) : parseFloat(elt.sb_paystatus === false ? 0 : elt.amouthRush);
                       }).reduce(function (a, b) { // sum all resulting numbers
                         return a + b
                       }).toLocaleString("en-US") : 0}
@@ -1988,8 +2011,8 @@ export default function AddressForm() {
                   <TableCell align="center" colSpan={1}>
                     <b>
                       {smartBill_WithdrawDtl[0].sbwdtl_id ? smartBill_WithdrawDtl.map(function (elt) {
-                        return (/^\d+\.\d+$/.test(elt.amouthother) || /^\d+$/.test(elt.amouthother)) ?
-                          parseFloat(elt.amouthother) : parseFloat(elt.amouthother);
+                        return (/^\d+\.\d+$/.test(elt.sb_paystatus === false ? 0 : elt.amouthother) || /^\d+$/.test(elt.sb_paystatus === false ? 0 : elt.amouthother)) ?
+                          parseFloat(elt.sb_paystatus === false ? 0 : elt.amouthother) : parseFloat(elt.sb_paystatus === false ? 0 : elt.amouthother);
                       }).reduce(function (a, b) { // sum all resulting numbers
                         return a + b
                       }).toLocaleString("en-US") : 0}
@@ -1998,8 +2021,8 @@ export default function AddressForm() {
                   <TableCell align="center" colSpan={1}>
                     <b>
                       {smartBill_WithdrawDtl[0].sbwdtl_id ? smartBill_WithdrawDtl.map(function (elt) {
-                        return (/^\d+\.\d+$/.test(elt.amouthAll) || /^\d+$/.test(elt.amouthAll)) ?
-                          parseFloat(elt.amouthAll) : parseFloat(elt.amouthAll);
+                        return (/^\d+\.\d+$/.test(elt.sb_paystatus === false ? 0 : elt.amouthAll) || /^\d+$/.test(elt.sb_paystatus === false ? 0 : elt.amouthAll)) ?
+                          parseFloat(elt.sb_paystatus === false ? 0 : elt.amouthAll) : parseFloat(elt.sb_paystatus === false ? 0 : elt.amouthAll);
                       }).reduce(function (a, b) { // sum all resulting numbers
                         return a + b
                       }).toLocaleString("en-US") : 0}
@@ -2179,6 +2202,7 @@ export default function AddressForm() {
                 <React.Fragment>
                   <Grid item xs={12}>
                     <Autocomplete
+                      autoHighlight
                       id="free-solo-demo"
                       freeSolo
                       options={sb_operationid}
@@ -2199,8 +2223,8 @@ export default function AddressForm() {
                         } else {
                           const list = [...smartBill_WithdrawDtlSave]
                           list[0]['sb_operationid'] = newInputValue.sb_operationid
-                          list[0]['sbwdtl_operationid_startdate'] = newInputValue.sb_operationid_startdate
-                          list[0]['sbwdtl_operationid_enddate'] = newInputValue.sb_operationid_enddate
+                          list[0]['sbwdtl_operationid_startdate'] = dayjs(newInputValue.sb_operationid_startdate)
+                          list[0]['sbwdtl_operationid_enddate'] = dayjs(newInputValue.sb_operationid_enddate)
                           list[0]['sbwdtl_operationid_endmile'] = newInputValue.sb_operationid_endmile
                           list[0]['sbwdtl_operationid_startmile'] = newInputValue.sb_operationid_startmile
                           list[0]['remark'] = newInputValue.sb_operationid_location
@@ -2226,7 +2250,7 @@ export default function AddressForm() {
                       },
                     }}
                     disabled={case_WithdrawDtlSave === 0 ? true : false}
-                    value={smartBill_WithdrawDtlSave[0].sbwdtl_operationid_startdate ? dayjs(smartBill_WithdrawDtlSave[0].sbwdtl_operationid_startdate) : null}
+                    value={smartBill_WithdrawDtlSave[0].sbwdtl_operationid_startdate ? dayjs(smartBill_WithdrawDtlSave[0].sbwdtl_operationid_startdate) : undefined}
                     onChange={(newValue) => {
                       const list = [...smartBill_WithdrawDtlSave]
                       list[0]['sbwdtl_operationid_startdate'] = dayjs(newValue).format('YYYY-MM-DD HH:mm:ss')
@@ -2250,7 +2274,7 @@ export default function AddressForm() {
                       },
                     }}
                     disabled={case_WithdrawDtlSave === 0 ? true : false}
-                    value={smartBill_WithdrawDtlSave[0].sbwdtl_operationid_enddate ? dayjs(smartBill_WithdrawDtlSave[0].sbwdtl_operationid_enddate) : null}
+                    value={smartBill_WithdrawDtlSave[0].sbwdtl_operationid_enddate ? dayjs(smartBill_WithdrawDtlSave[0].sbwdtl_operationid_enddate) : undefined}
                     onChange={(newValue) => {
                       const list = [...smartBill_WithdrawDtlSave]
                       list[0]['sbwdtl_operationid_enddate'] = dayjs(newValue).format('YYYY-MM-DD HH:mm:ss')
@@ -2474,6 +2498,7 @@ export default function AddressForm() {
                 <React.Fragment>
                   <Grid item xs={7}>
                     <Autocomplete
+                      autoHighlight
                       id="free-solo-demo"
                       freeSolo
                       name="costOther"
@@ -2711,8 +2736,16 @@ export default function AddressForm() {
               </Grid>
               {smartBill_CostAllowance.map((res, index) => (
                 <React.Fragment>
+                  <Grid item xs={12}>
+                    <Divider sx={{ py: 3 }} textAlign="left">
+                      <Typography className="payment-Forms">
+                        ค่าเบี้ยเลี้ยงรายการที่ {index + 1}
+                      </Typography>
+                    </Divider>
+                  </Grid>
                   <Grid item xs={4}>
                     <Autocomplete
+                      autoHighlight
                       id="free-solo-demo"
                       freeSolo
                       key={index}
@@ -2761,7 +2794,7 @@ export default function AddressForm() {
                         key={index}
                         sx={{ width: '100%' }}
                         disabled={payAllowanceCase === 0 || payAllowanceCase === "0" ? true : false}
-                        value={res.startdate ? dayjs(res.startdate) : null}
+                        value={res.startdate ? dayjs(res.startdate) : undefined}
                         onChange={(newValue) => {
                           const list = [...smartBill_CostAllowance]
                           list[index]['startdate'] = dayjs(newValue).format('YYYY-MM-DD HH:mm:ss')
@@ -2782,7 +2815,7 @@ export default function AddressForm() {
                         key={index}
                         sx={{ width: '100%' }}
                         disabled={payAllowanceCase === 0 || payAllowanceCase === "0" ? true : false}
-                        value={res.enddate ? dayjs(res.enddate) : null}
+                        value={res.enddate ? dayjs(res.enddate) : undefined}
                         onChange={(newValue) => {
                           const list = [...smartBill_CostAllowance]
                           list[index]['enddate'] = dayjs(newValue).format('YYYY-MM-DD HH:mm:ss')
@@ -2883,11 +2916,6 @@ export default function AddressForm() {
                       DELETE
                     </Button>
                   </Grid>
-                  {index === smartBill_CostAllowance.length - 1 ? null : (
-                    <Grid item xs={12}>
-                      <Divider sx={{ py: 1 }} />
-                    </Grid>
-                  )}
                 </React.Fragment>
               ))}
             </Grid>
@@ -2987,20 +3015,27 @@ export default function AddressForm() {
               </Grid>
               {smartBill_CostHotel.map((res, index) => (
                 <React.Fragment>
+                  <Grid item xs={12}>
+                    <Divider sx={{ py: 3 }} textAlign="left">
+                      <Typography className="payment-Forms">
+                        ค่าที่พักรายการที่ {index + 1}
+                      </Typography>
+                    </Divider>
+                  </Grid>
                   <Grid item xs={3}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DateTimePicker
-                        format="YYYY-MM-DD HH:mm"
+                        format="YYYY-MM-DD"
                         name="startdate"
                         label={`(ห้องพัก ${index + 1}) วันที่เข้าพัก`}
                         key={index}
                         timezone='UTC'
                         sx={{ width: '100%' }}
                         disabled={payHotelCase === 0 || payHotelCase === "0" ? true : false}
-                        value={res.startdate ? dayjs(res.startdate) : null}
+                        value={res.startdate ? dayjs(res.startdate) : undefined}
                         onChange={(newValue) => {
                           const list = [...smartBill_CostHotel]
-                          list[index]['startdate'] = dayjs(newValue).format('YYYY-MM-DD HH:mm:ss')
+                          list[index]['startdate'] = dayjs(newValue).format('YYYY-MM-DD 00:00:00')
                           list[index]['count'] = Math.trunc((new Date(res.enddate) - new Date(res.startdate)) / (1000 * 60 * 60 * 24))
                           setSmartBill_CostHotel(list)
                         }}
@@ -3011,17 +3046,17 @@ export default function AddressForm() {
                   <Grid item xs={3}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DateTimePicker
-                        format="YYYY-MM-DD HH:mm"
+                        format="YYYY-MM-DD"
                         name="enddate"
                         label={`(ห้องพัก ${index + 1}) วันที่ออก`}
                         timezone='UTC'
                         key={index}
                         sx={{ width: '100%' }}
                         disabled={payHotelCase === 0 || payHotelCase === "0" ? true : false}
-                        value={res.enddate ? dayjs(res.enddate) : null}
+                        value={res.enddate ? dayjs(res.enddate) : undefined}
                         onChange={(newValue) => {
                           const list = [...smartBill_CostHotel]
-                          list[index]['enddate'] = dayjs(newValue).format('YYYY-MM-DD HH:mm:ss')
+                          list[index]['enddate'] = dayjs(newValue).format('YYYY-MM-DD 00:00:00')
                           list[index]['count'] = Math.trunc((new Date(res.enddate) - new Date(res.startdate)) / (1000 * 60 * 60 * 24))
                           setSmartBill_CostHotel(list)
                         }}
@@ -3031,6 +3066,7 @@ export default function AddressForm() {
                   </Grid>
                   <Grid item xs={3}>
                     <Autocomplete
+                      autoHighlight
                       id="free-solo-demo"
                       freeSolo
                       name="sbc_hotelProvince"
@@ -3140,12 +3176,12 @@ export default function AddressForm() {
                   </Grid>
                   <Grid item xs={12}>
                     <Button
-                      disabled={
-                        (payHotelCase === 0 || payHotelCase === "0") ||
-                          smartBill_Withdraw[0].lock_status === true ||
-                          smartBill_CostHotel[index]['sbc_hotelProvince'] === ''
-                          ? true : false
-                      }
+                      // disabled={
+                      //   (payHotelCase === 0 || payHotelCase === "0") ||
+                      //     smartBill_Withdraw[0].lock_status === true ||
+                      //     smartBill_CostHotel[index]['sbc_hotelProvince'] === ''
+                      //     ? true : false
+                      // }
                       key={index}
                       onClick={(e) => handleServiceAddCostHotelGroup(e, index)}
                       variant="outlined"
@@ -3158,10 +3194,11 @@ export default function AddressForm() {
                     <React.Fragment>
                       <Grid item xs={5}>
                         <Autocomplete
+                          autoHighlight
                           id="free-solo-demo"
                           freeSolo
                           key={indexGroup}
-                          disabled={(payHotelCase === 0 || payHotelCase === "0") || smartBill_CostHotel[index]['sbc_hotelProvince'] === '' ? true : false}
+                          // disabled={(payHotelCase === 0 || payHotelCase === "0") || smartBill_CostHotel[index]['sbc_hotelProvince'] === '' ? true : false}
                           name="usercode"
                           value={resGroup.usercode}
                           options={users.map((option) => option.UserCode)}
@@ -3257,11 +3294,6 @@ export default function AddressForm() {
                       </Grid>
                     </React.Fragment>
                   ))}
-                  {index === smartBill_CostHotel.length - 1 ? null : (
-                    <Grid item xs={12}>
-                      <Divider sx={{ py: 1 }} />
-                    </Grid>
-                  )}
                 </React.Fragment>
               ))}
             </Grid>

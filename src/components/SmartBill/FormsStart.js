@@ -123,11 +123,11 @@ export default function FormsStart() {
     sb_operationid_location: '',
   }]);
 
-  const smartBill_Associate = [{
+  const [smartBill_Associate, setSmartBill_Associate] = React.useState([{
     allowance_usercode: '',
     sb_associate_startdate: '',
     sb_associate_enddate: ''
-  }]
+  }]);
 
   const [dataFilesCount, setDataFilesCount] = React.useState()
 
@@ -213,10 +213,12 @@ export default function FormsStart() {
       swal("แจ้งเตือน", smartBill_Operation.filter((res) => (res.sb_operationid_startdate === '' || res.sb_operationid_enddate === ''))[0] ? 'ระบุวันที่เดินทาง' :
         smartBill_Operation.filter((res) => (res.sb_operationid_startmile === '' || res.sb_operationid_endmile === ''))[0] ? 'ระบุเลขไมลล์เดินทาง' :
           smartBill_Operation.filter((res) => (res.sb_operationid_startoil === '' || res.sb_operationid_endoil === ''))[0] ? 'ระบุปริมาณน้ำมัน' :
-            smartBill_Operation.filter((res) => (res.sb_operationid_location === ''))[0] ? 'ระบุกิจกรรมที่ทำ' : 'ระบุข้อมูลการใช้งานรถ'
+            smartBill_Operation.filter((res) => (res.sb_operationid_location === ''))[0] ? 'ระบุกิจกรรมที่ทำ' : 'ระบุข้อมูล Pay (เบิก/ไม่เบิก)'
         , "error")
     } else if (!dataFilesCount) {
       swal("แจ้งเตือน", 'อัปโหลดรูปภาพอย่างน้อย 1 รูป', "error")
+    } else if (smartBill_Operation.filter((res) => (res.sb_operationid_startmile ? parseFloat(res.sb_operationid_startmile) : 0) > (res.sb_operationid_endmile ? parseFloat(res.sb_operationid_endmile) : 0))[0]) {
+      swal("แจ้งเตือน", 'เกิดข้อผิดพลาด *(ไมลล์สิ้นสุด < ไมลล์เริ่มต้น)', "error")
     } else {
       const body = {
         smartBill_Header: smartBill_Header,
@@ -234,7 +236,10 @@ export default function FormsStart() {
 
             await Axios.post(config.http + '/SmartBill_files', formData_1, config.headers)
               .then((res) => {
-                window.location.href = '/SMB/FormUpdate?' + response.data;
+                swal("แจ้งเตือน", 'บันทึกรายการแล้ว', "success")
+                  .then((res) => {
+                    window.location.href = '/SMB/FormUpdate?' + response.data;
+                  })
               })
           }
         })
@@ -288,6 +293,7 @@ export default function FormsStart() {
                 </Grid>
                 <Grid item xs={12} sm={2}>
                   <Autocomplete
+                    autoHighlight
                     id="free-solo-demo"
                     freeSolo
                     name="usercode"
@@ -321,9 +327,9 @@ export default function FormsStart() {
                   <TextField
                     required
                     name="sb_fristName"
-                    label="ชื่อจริง"
-                    value={smartBill_Header[0].sb_fristName}
+                    label="First name (ชื่อจริง)"
                     fullWidth
+                    value={smartBill_Header[0].sb_fristName}
                     autoComplete="given-name"
                     onChange={(event) => {
                       const list = [...smartBill_Header]
@@ -336,11 +342,12 @@ export default function FormsStart() {
                 <Grid item xs={12} sm={5}>
                   <TextField
                     required
+                    id="sb_lastName"
                     name="sb_lastName"
-                    label="นามสกุล"
+                    label="Last name (นามสกุล)"
                     fullWidth
                     value={smartBill_Header[0].sb_lastName}
-                    autoComplete="given-name"
+                    autoComplete="family-name"
                     onChange={(event) => {
                       const list = [...smartBill_Header]
                       list[0]['sb_lastName'] = event.target.value
@@ -409,6 +416,7 @@ export default function FormsStart() {
                 {typeCar === 1 || typeCar === "1" ? (
                   <Grid item xs={6} sm={6}>
                     <Autocomplete
+                      autoHighlight
                       id="free-solo-demo"
                       freeSolo
                       options={carInfoDataCompanny.map((option) => option.car_infocode)}
@@ -464,6 +472,7 @@ export default function FormsStart() {
                 ) : typeCar === 0 || typeCar === "0" ? (
                   <Grid item xs={6} sm={6}>
                     <Autocomplete
+                      autoHighlight
                       id="free-solo-demo"
                       freeSolo
                       options={carInfoData.map((option) => option.car_infocode)}
@@ -681,7 +690,7 @@ export default function FormsStart() {
                               label={`วันที่ออกเดินทาง (${index + 1})`}
                               timezone='UTC'
                               key={index}
-                              value={row.sb_operationid_startdate ? dayjs(row.sb_operationid_startdate) : null}
+                              value={row.sb_operationid_startdate ? dayjs(row.sb_operationid_startdate) : undefined}
                               sx={{ width: '100%' }}
                               onChange={(newValue) => {
                                 const list = [...smartBill_Operation]
@@ -742,7 +751,7 @@ export default function FormsStart() {
                               timezone='UTC'
                               key={index}
                               label={`วันที่สิ้นสุดเดินทาง (${index + 1})`}
-                              value={row.sb_operationid_enddate ? dayjs(row.sb_operationid_enddate) : null}
+                              value={row.sb_operationid_enddate ? dayjs(row.sb_operationid_enddate) : undefined}
                               sx={{ width: '100%' }}
                               onChange={(newValue) => {
                                 const list = [...smartBill_Operation]
@@ -805,6 +814,117 @@ export default function FormsStart() {
                     </React.Fragment>
                   ))}
                 </Grid>
+                {/* <Grid item xs={12}>
+                  <FormControl sx={{ pl: 1 }}>
+                    <RadioGroup
+                      row
+                      value={smartBill_Header[0].group_status}
+                      onChange={(event) => {
+                        const list = [...smartBill_Header]
+                        list[0].group_status = event.target.value
+                        setSmartBill_Header(list)
+                        setTypeGroup(event.target.value)
+                      }}
+                    >
+                      <FormControlLabel value={0} control={<Radio />} label="ไม่มีผู้ร่วมเดินทาง" />
+                      <FormControlLabel value={1} control={<Radio />} label="มีผู้ร่วมเดินทาง" />
+                    </RadioGroup>
+                  </FormControl>
+                </Grid>
+                {typeGroup === "1" ? (
+                  <React.Fragment>
+                    <Grid item xs={12}>
+                      <Stack
+                        direction="row"
+                        justifyContent="flex-start"
+                        alignItems="flex-start"
+                        spacing={2}
+                        sx={{ pb: 1 }}
+                      >
+                        <Button variant="outlined" onClick={handleServiceAddGroupJoin} startIcon={<PostAddIcon />}>
+                          Add List
+                        </Button>
+                        <Button variant="outlined" color="error" disabled={smartBill_Associate.length === 1 ? true : false} onClick={handleServiceRemoveGroupJoin} startIcon={<PostAddIcon />}>
+                          Delete List
+                        </Button>
+                      </Stack>
+                    </Grid>
+                    {smartBill_Associate.map((row, index) => (
+                      <React.Fragment>
+                        <Grid item xs={12}>
+                          <Divider textAlign="center" sx={{ py: 1 }}>ผู้ร่วมเดินทางคนที่ {index + 1}</Divider>
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                          <Autocomplete
+autoHighlight
+                            id="free-solo-demo"
+                            freeSolo
+                            key={index}
+                            name="initialJoin"
+                            value={smartBill_Associate[index].allowance_usercode}
+                            options={users.map((option) => option.UserCode)}
+                            onChange={(event, newValue, reason) => {
+                              if (reason === 'clear') {
+                                const list = [...smartBill_Associate]
+                                list[index]['allowance_usercode'] = ''
+                                list[index]['sb_associate_startdate'] = ''
+                                list[index]['sb_associate_enddate'] = ''
+                                setSmartBill_Associate(list)
+                              } else {
+                                const list = [...smartBill_Associate]
+                                list[index]['allowance_usercode'] = newValue
+                                setSmartBill_Associate(list)
+                              }
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label={`ผู้ร่วมเดินทางคนที่ ${index + 1} (initial)`}
+                                fullWidth
+                              />
+                            )}
+                          />
+                        </Grid>
+                        <Grid item xs={6} sm={4}>
+                          <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DateTimePicker
+                              format="YYYY-MM-DD HH:mm"
+                              name="sb_associate_startdate"
+                              key={index}
+                              label={`วันที่ออกเดินทาง`}
+                              sx={{ width: '100%' }}
+                              value={row.sb_associate_startdate === '' ? undefined : row.sb_associate_startdate}
+                              onChange={(newValue) => {
+                                const list = [...smartBill_Associate]
+                                list[index]['sb_associate_startdate'] = `${newValue.format('YYYY-MM-DD')}T${newValue.format('HH:mm:ss')}`
+                                setSmartBill_Associate(list)
+                              }}
+                              ampm={false}
+                            />
+                          </LocalizationProvider>
+                        </Grid>
+                        <Grid item xs={6} sm={4}>
+                          <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DateTimePicker
+                              format="YYYY-MM-DD HH:mm"
+                              name="sb_associate_enddate"
+                              key={index}
+                              label={`วันที่สิ้นสุดเดินทาง`}
+                              sx={{ width: '100%' }}
+                              value={row.sb_associate_enddate === '' ? undefined : row.sb_associate_enddate}
+                              onChange={(newValue) => {
+                                const list = [...smartBill_Associate]
+                                list[index]['sb_associate_enddate'] = `${newValue.format('YYYY-MM-DD')}T${newValue.format('HH:mm:ss')}`
+                                setSmartBill_Associate(list)
+                              }}
+                              ampm={false}
+                            />
+                          </LocalizationProvider>
+                        </Grid>
+                      </React.Fragment>
+                    ))}
+                  </React.Fragment>
+                ) : null} */}
                 <Grid item xs={12}>
                   <TextField
                     required
@@ -857,7 +977,7 @@ export default function FormsStart() {
                   <ImageList cols={6} variant="quilted">
                     {dataFilesCount ? dataFilesCount.map((item, index) => (
                       <ImageListItem key={item.img}>
-                        <a target="_blank" href={item.file} rel="noreferrer">
+                        <a target="_blank" href={item.file}>
                           <img
                             src={item.file}
                             srcSet={item.file}

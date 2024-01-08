@@ -459,6 +459,7 @@ export default function Checkout() {
                       {topicBranch === 1 ? (
                         <Grid item xs={12} sm={12}>
                           <Autocomplete
+                            autoHighlight
                             multiple
                             fullWidth
                             id="checkboxes-tags-demo"
@@ -514,6 +515,7 @@ export default function Checkout() {
                       {topic === 1 ? (
                         <Grid item xs={12} sm={12}>
                           <Autocomplete
+                            autoHighlight
                             multiple
                             fullWidth
                             id="checkboxes-tags-demo"
@@ -543,6 +545,7 @@ export default function Checkout() {
                       {topic === 2 ? (
                         <Grid item xs={12} sm={12}>
                           <Autocomplete
+                            autoHighlight
                             multiple
                             fullWidth
                             id="checkboxes-tags-demo"
@@ -572,6 +575,7 @@ export default function Checkout() {
                       {topic === 3 ? (
                         <Grid item xs={12} sm={12}>
                           <Autocomplete
+                            autoHighlight
                             multiple
                             fullWidth
                             id="checkboxes-tags-demo"

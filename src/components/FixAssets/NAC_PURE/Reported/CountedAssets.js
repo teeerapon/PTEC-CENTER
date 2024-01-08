@@ -427,9 +427,9 @@ export default function Reported_of_assets() {
     reportedAllDescription();
   }, []);
 
-  const handleChange = async (event) => {
+  const handleChange = async (event, newValue, reason) => {
     setProgress(0)
-    const Description = { Description: event.target.innerText }
+    const Description = { Description: newValue }
     const headers = {
       'Authorization': 'application/json; charset=utf-8',
       'Accept': 'application/json'
@@ -468,11 +468,12 @@ export default function Reported_of_assets() {
         <Box component="form" sx={{ display: 'flex', flexWrap: 'wrap' }}>
           <Container maxWidth="1000px" sx={{ pt: 3, pb: 3 }}>
             <Autocomplete
+              autoHighlight
               freeSolo
               id="free-solo-2-demo"
               disableClearable
               options={!selectMenu ? [] : selectMenu.map((option) => option.Description)}
-              onChange={handleChange}
+              onChange={(event, newValue, reason) => handleChange(event, newValue, reason)}
               renderInput={(params) => (
                 <TextField
                   {...params}

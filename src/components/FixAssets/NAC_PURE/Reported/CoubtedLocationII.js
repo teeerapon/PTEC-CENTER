@@ -439,8 +439,8 @@ export default function Reported_of_assets() {
     setSource_Description(event.target.value);
   };
 
-  const handleAutoSource_DeapartMent = async (e) => {
-    const UserCode = e.target.innerText
+  const handleAutoSource_DeapartMent = async (e, newValue, reason) => {
+    const UserCode = newValue
     const response = await AutoDeapartMent({
       UserCode
     });
@@ -481,8 +481,8 @@ export default function Reported_of_assets() {
     setDes_delivery(event.target.value);
   };
 
-  const handleAutoDes_DeapartMent = async (e) => {
-    const UserCode = e.target.innerText
+  const handleAutoDes_DeapartMent = async (e, newValue, reason) => {
+    const UserCode = newValue
     const response = await AutoDeapartMent({
       UserCode
     });
@@ -1136,7 +1136,8 @@ export default function Reported_of_assets() {
                                         options={users_pureDep}
                                         getOptionLabel={(option) => option.UserCode}
                                         filterOptions={filterOptions2}
-                                        onChange={handleAutoSource_DeapartMent}
+                                        autoHighlight
+                                        onChange={(e, newValue, reason) => handleAutoSource_DeapartMent(e, newValue, reason)}
                                         renderInput={(params) => (
                                           <React.Fragment>
                                             <TextField
@@ -1272,6 +1273,7 @@ export default function Reported_of_assets() {
                                   </Grid>
                                   <Grid item xs={12}>
                                     <Autocomplete
+                                      autoHighlight
                                       freeSolo
                                       name='des_delivery'
                                       id='delivery'
@@ -1279,7 +1281,7 @@ export default function Reported_of_assets() {
                                       getOptionLabel={(option) => option.UserCode}
                                       filterOptions={filterOptions2}
                                       //value={des_delivery[resultIndex[0].indexOf(des_delivery)]}
-                                      onChange={handleAutoDes_DeapartMent}
+                                      onChange={(e, newValue, reason) => handleAutoDes_DeapartMent(e, newValue, reason)}
                                       renderInput={(params) => (
                                         <React.Fragment>
                                           <TextField
@@ -1403,6 +1405,7 @@ export default function Reported_of_assets() {
                                   {data.branchid === 901 ? (
                                     <React.Fragment>
                                       <Autocomplete
+                                        autoHighlight
                                         freeSolo
                                         name='source'
                                         id='source'
@@ -1411,7 +1414,7 @@ export default function Reported_of_assets() {
                                         getOptionLabel={(option) => option.UserCode}
                                         filterOptions={filterOptions2}
                                         //value={UserForAssetsControl[resultIndex[0].indexOf(source)]}
-                                        onChange={handleAutoSource_DeapartMent}
+                                        onChange={(e, newValue, reason) => handleAutoSource_DeapartMent(e, newValue, reason)}
                                         renderInput={(params) => (
                                           <React.Fragment>
                                             <TextField
