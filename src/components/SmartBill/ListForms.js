@@ -151,6 +151,11 @@ export default function AddressForm() {
   const SelectHeaders = async () => {
     await Axios.get(config.http + '/SmartBill_SelectHeaders', config.headers)
       .then((res) => {
+        res.data = localStorage.getItem('sb_code') ? res.data.filter((res) => res.sb_code === localStorage.getItem('sb_code')) : res.data
+        res.data = localStorage.getItem('usercode') ? res.data.filter((res) => res.usercode === localStorage.getItem('usercode')) : res.data
+        res.data = localStorage.getItem('sb_name') ? res.data.filter((res) => res.sb_name === localStorage.getItem('sb_name')) : res.data
+        res.data = localStorage.getItem('car_infocode') ? res.data.filter((res) => res.car_infocode === localStorage.getItem('car_infocode')) : res.data
+        res.data = localStorage.getItem('sb_status_name') ? res.data.filter((res) => res.sb_status_name === localStorage.getItem('sb_status_name')) : res.data
         if (permission.filter((res) => res === 19)[0]) {
           setRowHeader(res.data)
         } else if (permission.filter((res) => res === 18)[0]) {
@@ -180,8 +185,8 @@ export default function AddressForm() {
       renderCell: (params) => {
         return (
           <React.Fragment>
-            <Typography variant="subtitle1" sx={{ color: params.row.sb_status_name === 1 ? 'red' : 'green' }} gutterBottom>
-              {params.rowsb_status_name === 1 ? 'รอ Admin ตรวจสอบ' : 'ดำเนินการเสร็จสิ้น'}
+            <Typography variant="subtitle1" sx={{ color: params.row.sb_status_name === 'รอ Admin ตรวจสอบ' ? 'red' : 'green' }} gutterBottom>
+              {params.row.sb_status_name}
             </Typography>
           </React.Fragment>
         );
@@ -230,11 +235,14 @@ export default function AddressForm() {
                   disablePortal
                   id="combo-box-demo"
                   size='small'
+                  value={localStorage.getItem('sb_code') ?? ''}
                   sx={{ py: 1 }}
                   onChange={(e, newInputValue, reason) => {
                     if (reason === 'clear') {
+                      localStorage.setItem('sb_code', '');
                       SelectHeaders();
                     } else {
+                      localStorage.setItem('sb_code', newInputValue);
                       setRowHeader(rowHeader.filter((res, index) => res.sb_code === newInputValue))
                     }
                   }}
@@ -252,10 +260,13 @@ export default function AddressForm() {
                   id="combo-box-demo"
                   size='small'
                   sx={{ py: 1 }}
+                  value={localStorage.getItem('usercode') ?? ''}
                   onChange={(e, newInputValue, reason) => {
                     if (reason === 'clear') {
+                      localStorage.setItem('usercode', '');
                       SelectHeaders();
                     } else {
+                      localStorage.setItem('usercode', newInputValue);
                       setRowHeader(rowHeader.filter((res, index) => res.usercode === newInputValue))
                     }
                   }}
@@ -272,11 +283,14 @@ export default function AddressForm() {
                   disablePortal
                   id="combo-box-demo"
                   size='small'
+                  value={localStorage.getItem('sb_name') ?? ''}
                   sx={{ py: 1 }}
                   onChange={(e, newInputValue, reason) => {
                     if (reason === 'clear') {
+                      localStorage.setItem('sb_name', '');
                       SelectHeaders();
                     } else {
+                      localStorage.setItem('sb_name', newInputValue);
                       setRowHeader(rowHeader.filter((res, index) => res.sb_name === newInputValue))
                     }
                   }}
@@ -293,11 +307,14 @@ export default function AddressForm() {
                   disablePortal
                   id="combo-box-demo"
                   size='small'
+                  value={localStorage.getItem('car_infocode') ?? ''}
                   sx={{ py: 1 }}
                   onChange={(e, newInputValue, reason) => {
                     if (reason === 'clear') {
+                      localStorage.setItem('car_infocode', '');
                       SelectHeaders();
                     } else {
+                      localStorage.setItem('car_infocode', newInputValue);
                       setRowHeader(rowHeader.filter((res, index) => res.car_infocode === newInputValue))
                     }
                   }}
@@ -306,6 +323,30 @@ export default function AddressForm() {
                       .reduce((x, y) => x.includes(y) ? x : [...x, y], []) : []
                   }
                   renderInput={(params) => <TextField label="ทะเบียนรถ" {...params} />}
+                />
+              </Grid>
+              <Grid item xs>
+                <Autocomplete
+                  autoHighlight
+                  disablePortal
+                  id="combo-box-demo"
+                  size='small'
+                  sx={{ py: 1 }}
+                  value={localStorage.getItem('sb_status_name') ?? ''}
+                  onChange={(e, newInputValue, reason) => {
+                    if (reason === 'clear') {
+                      localStorage.setItem('sb_status_name', '');
+                      SelectHeaders();
+                    } else {
+                      localStorage.setItem('sb_status_name', newInputValue);
+                      setRowHeader(rowHeader.filter((res, index) => res.sb_status_name === newInputValue))
+                    }
+                  }}
+                  options={
+                    rowHeader ? rowHeader.map((res) => res.sb_status_name).filter(x => !!x)
+                      .reduce((x, y) => x.includes(y) ? x : [...x, y], []) : []
+                  }
+                  renderInput={(params) => <TextField label="สถานะรายการ" {...params} />}
                 />
               </Grid>
             </Grid>
