@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import * as React from 'react';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -29,13 +28,14 @@ import Axios from "axios";
 import config from '../../config'
 import swal from 'sweetalert';
 import Autocomplete from '@mui/material/Autocomplete';
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
-
 import ImageListItemBar from '@mui/material/ImageListItemBar';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import PostAddIcon from '@mui/icons-material/PostAdd';
 
 const NumericFormatCustom = React.forwardRef(function NumericFormatCustom(
   props,
@@ -156,18 +156,75 @@ export default function AddressForm() {
   };
 
   const handleSubmit = async () => {
-    for (let i = 0; i < dataFilesCount.length; i++) {
+    if (
+      smartBill_Header[0].sb_name === '' ||
+      smartBill_Header[0].usercode === '' ||
+      smartBill_Header[0].sb_fristName === '' ||
+      smartBill_Header[0].sb_lastName === '' ||
+      smartBill_Header[0].reamarks === ''
+    ) {
+      swal(
+        "แจ้งเตือน", smartBill_Header[0].sb_name === '' ? `ระบุชื่อหัวข้อ` :
+        (smartBill_Header[0].sb_fristName === '' || smartBill_Header[0].sb_lastName === '') ? `ระบุชื่อจริง-นามสกุล` :
+          (smartBill_Header[0].usercode === '') ? `ระบุผู้ทำรายการ` :
+            smartBill_Header[0].reamarks === '' ? 'ระบุสถานที่จอดรถหลังการใช้งาน' : 'Error Code #54878584'
+        , "error")
+    } else if (carInfo.filter((res) =>
+      res.car_infocode === '' ||
+      res.car_typeid === '' ||
+      res.car_band === '' ||
+      res.car_tier === '' ||
+      res.car_color === ''
+    )[0]
+    ) {
+      swal(
+        "แจ้งเตือน", carInfo[0].car_infocode === '' ? 'ระบุเลขทะเบียน' :
+        carInfo[0].car_typeid === '' ? 'ระบุประเภท' :
+          carInfo[0].car_band === '' ? 'ระบุแบรนด์' :
+            carInfo[0].car_tier === '' ? 'ระบุรุ่น' :
+              carInfo[0].car_color === '' ? 'ระบุสี' : 'Error Code #54878584'
+        , "error")
+    } else if (smartBill_Operation.filter((res) => (res.sb_operationid_startdate === '' ||
+      res.sb_operationid_startmile === '' ||
+      res.sb_operationid_startoil === '' ||
+      res.sb_operationid_enddate === '' ||
+      res.sb_operationid_endoil === '' ||
+      res.sb_operationid_endmile === '' ||
+      res.sb_paystatus === '' ||
+      res.sb_operationid_location === ''))[0]
+    ) {
+      swal("แจ้งเตือน", smartBill_Operation.filter((res) => (res.sb_operationid_startdate === '' || res.sb_operationid_enddate === ''))[0] ? 'ระบุวันที่เดินทาง' :
+        smartBill_Operation.filter((res) => (res.sb_operationid_startmile === '' || res.sb_operationid_endmile === ''))[0] ? 'ระบุเลขไมลล์เดินทาง' :
+          smartBill_Operation.filter((res) => (res.sb_operationid_startoil === '' || res.sb_operationid_endoil === ''))[0] ? 'ระบุปริมาณน้ำมัน' :
+            smartBill_Operation.filter((res) => (res.sb_operationid_location === ''))[0] ? 'ระบุกิจกรรมที่ทำ' : 'ระบุข้อมูล Pay (เบิก/ไม่เบิก)'
+        , "error")
+    } else if (!dataFilesCount) {
+      swal("แจ้งเตือน", 'อัปโหลดรูปภาพอย่างน้อย 1 รูป', "error")
+    } else if (smartBill_Operation.filter((res) => (res.sb_operationid_startmile ? parseFloat(res.sb_operationid_startmile) : 0) > (res.sb_operationid_endmile ? parseFloat(res.sb_operationid_endmile) : 0))[0]) {
+      swal("แจ้งเตือน", 'เกิดข้อผิดพลาด *(ไมลล์สิ้นสุด < ไมลล์เริ่มต้น)', "error")
+    } else {
+      const body = {
+        sb_code: sb_code,
+        smartBill_Header: smartBill_Header,
+        carInfo: carInfo,
+        smartBill_Operation: smartBill_Operation,
+        smartBill_Associate: smartBill_Associate,
+      }
+      await Axios.post(config.http + '/SmartBill_CreateForms', body, config.headers)
+        .then(async (response) => {
+          for (const element of dataFilesCount) {
+            let formData_1 = new FormData();
+            formData_1.append('file', element.fileData);
+            formData_1.append('sb_code', sb_code);
 
-      let formData_1 = new FormData();
-      formData_1.append('file', dataFilesCount[i].fileData);
-      formData_1.append('sb_code', sb_code);
-
-      await Axios.post(config.http + '/SmartBill_files', formData_1, config.headers)
-        .then(() => {
-          swal("แจ้งเตือน", 'เปลี่ยนแปลงข้อมูลแล้ว', "success", { buttons: false, timer: 2000 })
-            .then(() => {
-              window.location.href = '/SMB/FormUpdate?' + sb_code;
-            });
+            await Axios.post(config.http + '/SmartBill_files', formData_1, config.headers)
+              .then(() => {
+                swal("แจ้งเตือน", 'เปลี่ยนแปลงข้อมูลแล้ว', "success", { buttons: false, timer: 2000 })
+                  .then(() => {
+                    window.location.href = '/SMB/FormUpdate?' + sb_code;
+                  });
+              })
+          }
         })
     }
   }
@@ -257,6 +314,25 @@ export default function AddressForm() {
       })
   }
 
+  const handleServiceAddDate = (index) => {
+    setSmartBill_Operation([...smartBill_Operation, {
+      sb_operationid_startdate: '',
+      sb_operationid_startmile: '',
+      sb_operationid_startoil: '',
+      sb_operationid_enddate: smartBill_Operation[index - 1] ? smartBill_Operation[index - 1].sb_operationid_startmile : '',
+      sb_operationid_endoil: '',
+      sb_operationid_endmile: '',
+      sb_paystatus: '',
+      sb_operationid_location: '',
+    }]);
+  };
+
+  const handleServiceRemoveDate = () => {
+    const list = [...smartBill_Operation];
+    list.splice((smartBill_Operation.length - 1), 1);
+    setSmartBill_Operation(list);
+  };
+
   React.useEffect(() => {
     gettingUsers();
   }, [])
@@ -281,7 +357,6 @@ export default function AddressForm() {
                 <Grid item xs={12}>
                   <TextField
                     required
-                    disabled
                     sx={{
                       "& .MuiInputBase-input.Mui-disabled": {
                         WebkitTextFillColor: "#000000",
@@ -303,11 +378,10 @@ export default function AddressForm() {
                 </Grid>
                 <Grid item xs={12} sm={2}>
                   <Autocomplete
-autoHighlight
+                    autoHighlight
                     id="free-solo-demo"
                     freeSolo
                     name="usercode"
-                    disabled
                     sx={{
                       "& .MuiInputBase-input.Mui-disabled": {
                         WebkitTextFillColor: "#000000",
@@ -326,7 +400,6 @@ autoHighlight
                 </Grid>
                 <Grid item xs={12} sm={5}>
                   <TextField
-                    disabled
                     sx={{
                       "& .MuiInputBase-input.Mui-disabled": {
                         WebkitTextFillColor: "#000000",
@@ -349,7 +422,6 @@ autoHighlight
                 <Grid item xs={12} sm={5}>
                   <TextField
                     required
-                    disabled
                     sx={{
                       "& .MuiInputBase-input.Mui-disabled": {
                         WebkitTextFillColor: "#000000",
@@ -380,7 +452,6 @@ autoHighlight
                       id="demo-simple-select"
                       value={typeCar}
                       label="ประเภทการใช้งาน"
-                      disabled
                       sx={{
                         "& .MuiInputBase-input.Mui-disabled": {
                           WebkitTextFillColor: "#000000",
@@ -402,6 +473,7 @@ autoHighlight
                               list[0]['car_color'] = event.target.value === 0 ? '' : list[0]['car_color']
                               list[0]['car_remarks'] = event.target.value === 0 ? '' : list[0]['car_remarks']
                               setCarInfoDataCompanny(response.data.filter((res) => res.car_infostatus_companny === true)); // 1 รถบริษัท
+                              setCarInfoData([])
                               setCarInfo(list)
                               setTypeCar(event.target.value);
                             })
@@ -420,6 +492,7 @@ autoHighlight
                               list[0]['car_color'] = event.target.value === 0 ? '' : list[0]['car_color']
                               list[0]['car_remarks'] = event.target.value === 0 ? '' : list[0]['car_remarks']
                               setCarInfoData(response.data.filter((res) => res.car_infostatus_companny === false)); //  0 รถส่วนตัว
+                              setCarInfoDataCompanny([])
                               setCarInfo(list)
                               setTypeCar(event.target.value);
                             })
@@ -435,10 +508,9 @@ autoHighlight
                 {typeCar === 1 || typeCar === "1" ? (
                   <Grid item xs={6} sm={6}>
                     <Autocomplete
-autoHighlight
+                      autoHighlight
                       id="free-solo-demo"
                       freeSolo
-                      disabled
                       sx={{
                         "& .MuiInputBase-input.Mui-disabled": {
                           WebkitTextFillColor: "#000000",
@@ -494,10 +566,9 @@ autoHighlight
                 ) : typeCar === 0 || typeCar === "0" ? (
                   <Grid item xs={6} sm={6}>
                     <Autocomplete
-autoHighlight
+                      autoHighlight
                       id="free-solo-demo"
                       freeSolo
-                      disabled
                       sx={{
                         "& .MuiInputBase-input.Mui-disabled": {
                           WebkitTextFillColor: "#000000",
@@ -672,8 +743,7 @@ autoHighlight
                 </Grid>
 
                 {/* ฟอร์ม Car-Info */}
-
-                {/* <Grid item xs={12}>
+                <Grid item xs={12}>
                   <Stack
                     direction="row"
                     justifyContent="flex-start"
@@ -688,7 +758,7 @@ autoHighlight
                       Delete List
                     </Button>
                   </Stack>
-                </Grid> */}
+                </Grid>
                 <Grid item xs={12}>
                   {smartBill_Operation.map((row, index) => (
                     <React.Fragment>
@@ -706,7 +776,6 @@ autoHighlight
                           <FormControl fullWidth>
                             <InputLabel id="demo-simple-select-label">Pay</InputLabel>
                             <Select
-                              disabled
                               sx={{
                                 "& .MuiInputBase-input.Mui-disabled": {
                                   WebkitTextFillColor: "#000000",
@@ -733,7 +802,6 @@ autoHighlight
                         <Grid item xs={6} sm={4}>
                           <TextField
                             required
-                            disabled
                             sx={{
                               "& .MuiInputBase-input.Mui-disabled": {
                                 WebkitTextFillColor: "#000000",
@@ -770,7 +838,6 @@ autoHighlight
                               label={`วันที่ออกเดินทาง (${index + 1})`}
                               timezone='UTC'
                               key={index}
-                              disabled
                               sx={{
                                 width: '100%',
                                 "& .MuiInputBase-input.Mui-disabled": {
@@ -794,7 +861,6 @@ autoHighlight
                             key={index}
                             label={`ไมล์เริ่มต้น (${index + 1})`}
                             fullWidth
-                            disabled
                             InputProps={{
                               inputComponent: NumericFormatCustom,
                             }}
@@ -821,7 +887,6 @@ autoHighlight
                           <FormControl fullWidth>
                             <InputLabel id="demo-simple-select-label">{`น้ำมันเริ่มต้น (${index + 1})`}</InputLabel>
                             <Select
-                              disabled
                               sx={{
                                 "& .MuiInputBase-input.Mui-disabled": {
                                   WebkitTextFillColor: "#000000",
@@ -853,7 +918,6 @@ autoHighlight
                               key={index}
                               label={`วันที่สิ้นสุดเดินทาง (${index + 1})`}
                               timezone='UTC'
-                              disabled
                               sx={{
                                 width: '100%',
                                 "& .MuiInputBase-input.Mui-disabled": {
@@ -873,7 +937,6 @@ autoHighlight
                         <Grid item xs={6} sm={3}>
                           <TextField
                             required
-                            disabled
                             sx={{
                               "& .MuiInputBase-input.Mui-disabled": {
                                 WebkitTextFillColor: "#000000",
@@ -906,7 +969,6 @@ autoHighlight
                           <FormControl fullWidth>
                             <InputLabel id="demo-simple-select-label">{`น้ำมันสิ้นสุด (${index + 1})`}</InputLabel>
                             <Select
-                              disabled
                               sx={{
                                 "& .MuiInputBase-input.Mui-disabled": {
                                   WebkitTextFillColor: "#000000",
@@ -934,140 +996,10 @@ autoHighlight
                     </React.Fragment>
                   ))}
                 </Grid>
-                {/* <Grid item xs={12}>
-                  <FormControl sx={{ pl: 1 }}>
-                    <RadioGroup
-                      row
-                      value={smartBill_Header[0].group_status}
-                      onChange={(event) => {
-                        const list = [...smartBill_Header]
-                        list[0].group_status = event.target.value
-                        setSmartBill_Header(list)
-                        setTypeGroup(event.target.value)
-                      }}
-                    >
-                      <FormControlLabel value={0} control={<Radio />} label="ไม่มีผู้ร่วมเดินทาง" />
-                      <FormControlLabel value={1} control={<Radio />} label="มีผู้ร่วมเดินทาง" />
-                    </RadioGroup>
-                  </FormControl>
-                </Grid>
-                {typeGroup === "1" || typeGroup === 1 ? (
-                  <React.Fragment>
-                    <Grid item xs={12}>
-                      <Stack
-                        direction="row"
-                        justifyContent="flex-start"
-                        alignItems="flex-start"
-                        spacing={2}
-                        sx={{ pb: 1 }}
-                      >
-                        <Button variant="outlined" onClick={handleServiceAddGroupJoin} startIcon={<PostAddIcon />}>
-                          Add List
-                        </Button>
-                        <Button variant="outlined" color="error" disabled={smartBill_Associate.length === 1 ? true : false} onClick={handleServiceRemoveGroupJoin} startIcon={<PostAddIcon />}>
-                          Delete List
-                        </Button>
-                      </Stack>
-                    </Grid>
-                    {smartBill_Associate.map((row, index) => (
-                      <React.Fragment>
-                        <Grid item xs={12}>
-                          <Divider textAlign="center" sx={{ py: 1 }}>ผู้ร่วมเดินทางคนที่ {index + 1}</Divider>
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                          <Autocomplete
-autoHighlight
-                            disabled
-                            sx={{
-                              "& .MuiInputBase-input.Mui-disabled": {
-                                WebkitTextFillColor: "#000000",
-                              },
-                            }}
-                            id="free-solo-demo"
-                            freeSolo
-                            key={index}
-                            name="initialJoin"
-                            value={smartBill_Associate[index].allowance_usercode}
-                            options={users.map((option) => option.UserCode)}
-                            onChange={(event, newValue, reason) => {
-                              if (reason === 'clear') {
-                                const list = [...smartBill_Associate]
-                                list[index]['allowance_usercode'] = ''
-                                list[index]['sb_associate_startdate'] = ''
-                                list[index]['sb_associate_enddate'] = ''
-                                setSmartBill_Associate(list)
-                              } else {
-                                const list = [...smartBill_Associate]
-                                list[index]['allowance_usercode'] = newValue
-                                setSmartBill_Associate(list)
-                              }
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                label={`ผู้ร่วมเดินทางคนที่ ${index + 1} (initial)`}
-                                fullWidth
-                              />
-                            )}
-                          />
-                        </Grid>
-                        <Grid item xs={6} sm={4}>
-                          <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DateTimePicker
-                              disabled
-                              sx={{
-                                width: '100%',
-                                "& .MuiInputBase-input.Mui-disabled": {
-                                  WebkitTextFillColor: "#000000",
-                                }
-                              }}
-                              format="YYYY-MM-DD HH:mm"
-                              name="sb_associate_startdate"
-                              key={index}
-                              label={`วันที่ออกเดินทาง`}
-                              value={row.sb_associate_startdate === '' ? undefined : row.sb_associate_startdate}
-                              onChange={(newValue) => {
-                                const list = [...smartBill_Associate]
-                                list[index]['sb_associate_startdate'] = `${newValue.format('YYYY-MM-DD')}T${newValue.format('HH:mm:ss')}`
-                                setSmartBill_Associate(list)
-                              }}
-                              ampm={false}
-                            />
-                          </LocalizationProvider>
-                        </Grid>
-                        <Grid item xs={6} sm={4}>
-                          <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DateTimePicker
-                              disabled
-                              sx={{
-                                width: '100%',
-                                "& .MuiInputBase-input.Mui-disabled": {
-                                  WebkitTextFillColor: "#000000",
-                                }
-                              }}
-                              format="YYYY-MM-DD HH:mm"
-                              name="sb_associate_enddate"
-                              key={index}
-                              label={`วันที่สิ้นสุดเดินทาง`}
-                              value={row.sb_associate_enddate === '' ? undefined : row.sb_associate_enddate}
-                              onChange={(newValue) => {
-                                const list = [...smartBill_Associate]
-                                list[index]['sb_associate_enddate'] = `${newValue.format('YYYY-MM-DD')}T${newValue.format('HH:mm:ss')}`
-                                setSmartBill_Associate(list)
-                              }}
-                              ampm={false}
-                            />
-                          </LocalizationProvider>
-                        </Grid>
-                      </React.Fragment>
-                    ))}
-                  </React.Fragment>
-                ) : null} */}
                 <Grid item xs={12}>
                   <TextField
                     required
                     name="reamarks"
-                    disabled
                     sx={{
                       "& .MuiInputBase-input.Mui-disabled": {
                         WebkitTextFillColor: "#000000",
@@ -1139,6 +1071,7 @@ autoHighlight
                                     if (response.status === 200) {
                                       const list = [...dataFilesCount];
                                       list.splice(index, 1);
+
                                       setDataFilesCount(list);
                                     }
                                   })
