@@ -90,21 +90,7 @@ export default function ButtonAppBar({ stateNav }) {
       timer: 1500,
     })
       .then(() => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("data");
-        localStorage.removeItem("permission_MenuID");
-        localStorage.removeItem("permission");
-        localStorage.removeItem("Allaseets");
-        localStorage.removeItem("aseetsCounted");
-        localStorage.removeItem("assetsWrong");
-        localStorage.removeItem("DataCreatePeriod");
-        localStorage.removeItem("NacCode");
-        localStorage.removeItem("pagination");
-        localStorage.removeItem("pagination_user");
-        localStorage.removeItem("filterModel");
-        localStorage.removeItem("filterModel_user");
-        localStorage.removeItem("filterNAC");
-        localStorage.removeItem("filterNAC_user");
+        localStorage.clear();
         window.location.href = '/'
       });
   };
