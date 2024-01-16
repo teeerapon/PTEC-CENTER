@@ -53,7 +53,7 @@ export default function Nac_Main({ nac_code, nac_type, approveData, sendHeader }
                     {approveData.filter((res) => res.limitamount < sendHeader[0].sumPrice && sendHeader[0].nac_type !== 1).map((resMap) => (
                       <Typography style={{ 'color': resMap.status === 1 ? 'blue' : 'black', fontSize: '1rem', fontWeight: 'bold' }}>
                         {
-                          resMap.workflowlevel === 0 ? `(ตรวจสอบ BV: ${resMap.approverid})` :
+                          // resMap.workflowlevel === 0 ? `(ตรวจสอบ BV: ${resMap.approverid})` :
                             resMap.workflowlevel === 1 ? `(AM: ${resMap.approverid})` :
                               resMap.workflowlevel === 2 ? `(SM: ${resMap.approverid})` :
                                 resMap.workflowlevel === 3 ? `(DM: ${resMap.approverid})` :
