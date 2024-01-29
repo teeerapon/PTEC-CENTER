@@ -101,6 +101,7 @@ export default function AddressForm() {
     clean_status: 0,
     group_status: 0,
     reamarks: '',
+    sb_status_name: '',
   }])
 
   const [carInfo, setCarInfo] = React.useState([{
@@ -115,10 +116,10 @@ export default function AddressForm() {
   }])
 
   const [smartBill_Operation, setSmartBill_Operation] = React.useState([{
-    sb_operationid_startdate: '',
+    sb_operationid_startdate: dayjs().tz('Asia/Bangkok'),
     sb_operationid_startmile: '',
     sb_operationid_startoil: '',
-    sb_operationid_enddate: '',
+    sb_operationid_enddate: dayjs().tz('Asia/Bangkok'),
     sb_operationid_endoil: '',
     sb_operationid_endmile: '',
     sb_paystatus: '',
@@ -230,12 +231,16 @@ export default function AddressForm() {
   }
 
   const handleSubmitAccept = async () => {
-    await Axios.post(config.http + '/SmartBill_AcceptHeader', { sb_code: sb_code }, config.headers)
-      .then(() => {
-        swal("แจ้งเตือน", 'เปลี่ยนแปลงข้อมูลแล้ว', "success", { buttons: false, timer: 2000 })
-          .then(() => {
-            window.location.href = '/SMB/FormUpdate?' + sb_code;
-          });
+    const body = { sb_code: sb_code, usercode: dataUser.UserCode }
+    await Axios.post(config.http + '/SmartBill_AcceptHeader', body, config.headers)
+      .then((res) => {
+        console.log(res);
+        // if (res.status === 200) {
+        //   swal("แจ้งเตือน", 'เปลี่ยนแปลงข้อมูลแล้ว', "success", { buttons: false, timer: 2000 })
+        //     .then((res) => {
+        //       window.location.href = '/FormUpdate?' + sb_code;
+        //     });
+        // };
       })
   }
 
@@ -256,6 +261,7 @@ export default function AddressForm() {
           clean_status: res.data[0][0].clean_status === true ? 1 : 0,
           group_status: res.data[0][0].group_status === true ? 1 : 0,
           reamarks: res.data[0][0].reamarks,
+          sb_status_name: res.data[0][0].sb_status_name,
         }])
 
         setTypeGroup(res.data[0][0].group_status === true ? 1 : 0)
@@ -283,10 +289,10 @@ export default function AddressForm() {
 
         setSmartBill_Operation(res.data[1].map((res_operationid) => {
           return {
-            sb_operationid_startdate: res_operationid.sb_operationid_startdate,
+            sb_operationid_startdate: dayjs(res_operationid.sb_operationid_startdate),
             sb_operationid_startmile: res_operationid.sb_operationid_startmile,
             sb_operationid_startoil: res_operationid.sb_operationid_startoil,
-            sb_operationid_enddate: res_operationid.sb_operationid_enddate,
+            sb_operationid_enddate: dayjs(res_operationid.sb_operationid_enddate),
             sb_operationid_endoil: res_operationid.sb_operationid_endoil,
             sb_operationid_endmile: res_operationid.sb_operationid_endmile,
             sb_paystatus: res_operationid.sb_paystatus === true ? 1 : 0,
@@ -316,10 +322,10 @@ export default function AddressForm() {
 
   const handleServiceAddDate = (index) => {
     setSmartBill_Operation([...smartBill_Operation, {
-      sb_operationid_startdate: '',
+      sb_operationid_startdate: dayjs().tz('Asia/Bangkok'),
       sb_operationid_startmile: '',
       sb_operationid_startoil: '',
-      sb_operationid_enddate: smartBill_Operation[index - 1] ? smartBill_Operation[index - 1].sb_operationid_startmile : '',
+      sb_operationid_enddate: smartBill_Operation[index - 1] ? smartBill_Operation[index - 1].sb_operationid_startmile : dayjs().tz('Asia/Bangkok'),
       sb_operationid_endoil: '',
       sb_operationid_endmile: '',
       sb_paystatus: '',
@@ -342,7 +348,16 @@ export default function AddressForm() {
       <CssBaseline />
       <Container component="main" maxWidth="md" sx={{ mb: 4 }}>
         <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
-          <Typography sx={{ py: 5 }} component="h1" variant="h4" align="center" className="Header-Forms">
+          <Typography
+            sx={{ py: 1 }}
+            component="h1"
+            variant="caption"
+            align="right"
+            color={smartBill_Header[0].sb_status_name === 'รอ Admin ตรวจสอบ' ? 'red' : 'green'}
+          >
+            ({smartBill_Header[0].sb_status_name})
+          </Typography>
+          <Typography sx={{ py: 4 }} component="h1" variant="h4" align="center" className="Header-Forms">
             Smart-Car Form ({sb_code})
           </Typography>
           <React.Fragment>
@@ -836,7 +851,7 @@ export default function AddressForm() {
                               format="YYYY-MM-DD HH:mm"
                               name="sb_operationid_startdate"
                               label={`วันที่ออกเดินทาง (${index + 1})`}
-                              timezone='UTC'
+                              //timezone='UTC'
                               key={index}
                               sx={{
                                 width: '100%',
@@ -844,10 +859,10 @@ export default function AddressForm() {
                                   WebkitTextFillColor: "#000000",
                                 }
                               }}
-                              value={row.sb_operationid_startdate ? dayjs(row.sb_operationid_startdate) : undefined}
+                              value={row.sb_operationid_startdate}
                               onChange={(newValue) => {
                                 const list = [...smartBill_Operation]
-                                list[index]['sb_operationid_startdate'] = newValue.format('YYYY-MM-DD HH:mm:ss')
+                                list[index]['sb_operationid_startdate'] = dayjs.tz(newValue, "YYYY-MM-DD HH:mm", "Asia/Bangkok")
                                 setSmartBill_Operation(list)
                               }}
                               ampm={false}
@@ -917,17 +932,17 @@ export default function AddressForm() {
                               name="sb_operationid_enddate"
                               key={index}
                               label={`วันที่สิ้นสุดเดินทาง (${index + 1})`}
-                              timezone='UTC'
+                              //timezone='UTC'
                               sx={{
                                 width: '100%',
                                 "& .MuiInputBase-input.Mui-disabled": {
                                   WebkitTextFillColor: "#000000",
                                 }
                               }}
-                              value={row.sb_operationid_enddate ? dayjs(row.sb_operationid_enddate) : undefined}
+                              value={row.sb_operationid_enddate}
                               onChange={(newValue) => {
                                 const list = [...smartBill_Operation]
-                                list[index]['sb_operationid_enddate'] = newValue.format('YYYY-MM-DD HH:mm:ss')
+                                list[index]['sb_operationid_enddate'] = dayjs.tz(newValue, "YYYY-MM-DD HH:mm", "Asia/Bangkok")
                                 setSmartBill_Operation(list)
                               }}
                               ampm={false}
@@ -1100,7 +1115,7 @@ export default function AddressForm() {
               <Button
                 variant="contained"
                 color="success"
-                disabled={dataUser.DepCode === '101GAD' ? false : true}
+                disabled={dataUser.DepCode === '101GAD' || dataUser.DepCode === '101ITO' ? false : true}
                 onClick={handleSubmitAccept}
                 sx={{ mt: 3, ml: 1 }}
               >

@@ -113,10 +113,10 @@ export default function FormsStart() {
   }])
 
   const [smartBill_Operation, setSmartBill_Operation] = React.useState([{
-    sb_operationid_startdate: '',
+    sb_operationid_startdate: dayjs().tz('Asia/Bangkok'),
     sb_operationid_startmile: '',
     sb_operationid_startoil: '',
-    sb_operationid_enddate: '',
+    sb_operationid_enddate: dayjs().tz('Asia/Bangkok'),
     sb_operationid_endoil: '',
     sb_operationid_endmile: '',
     sb_paystatus: '',
@@ -155,10 +155,10 @@ export default function FormsStart() {
 
   const handleServiceAddDate = (index) => {
     setSmartBill_Operation([...smartBill_Operation, {
-      sb_operationid_startdate: '',
+      sb_operationid_startdate: dayjs().tz('Asia/Bangkok'),
       sb_operationid_startmile: '',
       sb_operationid_startoil: '',
-      sb_operationid_enddate: smartBill_Operation[index - 1] ? smartBill_Operation[index - 1].sb_operationid_startmile : '',
+      sb_operationid_enddate: smartBill_Operation[index - 1] ? smartBill_Operation[index - 1].sb_operationid_startmile : dayjs().tz('Asia/Bangkok'),
       sb_operationid_endoil: '',
       sb_operationid_endmile: '',
       sb_paystatus: '',
@@ -688,13 +688,13 @@ export default function FormsStart() {
                               format="YYYY-MM-DD HH:mm"
                               name="sb_operationid_startdate"
                               label={`วันที่ออกเดินทาง (${index + 1})`}
-                              timezone='UTC'
+                              //timezone='UTC'
                               key={index}
-                              value={row.sb_operationid_startdate ? dayjs(row.sb_operationid_startdate) : undefined}
+                              value={row.sb_operationid_startdate}
                               sx={{ width: '100%' }}
                               onChange={(newValue) => {
                                 const list = [...smartBill_Operation]
-                                list[index]['sb_operationid_startdate'] = dayjs(newValue).format('YYYY-MM-DD HH:mm:ss')
+                                list[index]['sb_operationid_startdate'] = dayjs.tz(newValue, "YYYY-MM-DD HH:mm", "Asia/Bangkok")
                                 setSmartBill_Operation(list)
                               }}
                               ampm={false}
@@ -748,14 +748,14 @@ export default function FormsStart() {
                             <DateTimePicker
                               format="YYYY-MM-DD HH:mm"
                               name="sb_operationid_enddate"
-                              timezone='UTC'
+                              //timezone='UTC'
                               key={index}
                               label={`วันที่สิ้นสุดเดินทาง (${index + 1})`}
-                              value={row.sb_operationid_enddate ? dayjs(row.sb_operationid_enddate) : undefined}
+                              value={row.sb_operationid_enddate}
                               sx={{ width: '100%' }}
                               onChange={(newValue) => {
                                 const list = [...smartBill_Operation]
-                                list[index]['sb_operationid_enddate'] = dayjs(newValue).format('YYYY-MM-DD HH:mm:ss')
+                                list[index]['sb_operationid_enddate'] = dayjs.tz(newValue, "YYYY-MM-DD HH:mm", "Asia/Bangkok")
                                 setSmartBill_Operation(list)
                               }}
                               ampm={false}
