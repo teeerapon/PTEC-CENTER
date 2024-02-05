@@ -3,7 +3,9 @@
   min-height: 100vh;
 }
 
-iframe#webpack-dev-server-client-overlay{display:none!important}
+iframe#webpack-dev-server-client-overlay {
+  display: none !important
+}
 
 .App-logo {
   height: 12rem !important;

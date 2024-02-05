@@ -486,6 +486,7 @@ export default function History_of_assets() {
     } else {
       navigate('/NAC/HomePage_NAC')
     }
+    localStorage.setItem('list_satatusNAC', '/NAC/UserStatus');
   };
 
   const handleDrop_NAC = async () => {

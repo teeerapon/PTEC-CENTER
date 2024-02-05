@@ -25,13 +25,14 @@ import Menu from '@mui/material/Menu';
 import Avatar from '@mui/material/Avatar';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import Tooltip from '@mui/material/Tooltip';
-import ArrowRight from '@mui/icons-material/ArrowRight';
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
-import Settings from '@mui/icons-material/Settings';
 import CircleIcon from '@mui/icons-material/Circle';
 import Axios from "axios";
-import config from '../config'
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import config from '../config';
+import HomeIcon from '@mui/icons-material/Home';
+import SvgIcon from '@mui/material/SvgIcon';
+import ArticleIcon from '@mui/icons-material/Article';
+import Grid from '@mui/material/Grid';
 
 const data = JSON.parse(localStorage.getItem('data'));
 
@@ -68,15 +69,6 @@ const darkTheme = createTheme({
     },
   },
 });
-
-const DrawerHeader = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  padding: theme.spacing(0, 1),
-  // necessary for content to be below app bar
-  ...theme.mixins.toolbar,
-  justifyContent: 'flex-end',
-}));
 
 export default function ButtonAppBar() {
   const theme = useTheme();
@@ -152,6 +144,27 @@ export default function ButtonAppBar() {
       })
   }
 
+  const handleClickList = (e) => {
+    if (window.location.pathname === '/SMB/StartForms' || window.location.pathname === '/SMB/FormUpdate') {
+      window.location.href = '/SMB/ListForms'
+    } else if (window.location.pathname === '/SMB/Payment') {
+      window.location.href = '/SMB/ListWithdraw'
+    } else if (
+      window.location.pathname === '/NAC/AddAssets_1' ||
+      window.location.pathname === '/NAC/ChangeAssets_1' ||
+      window.location.pathname === '/NAC/TransferAssets_1' ||
+      window.location.pathname === '/NAC/SealsAssets_1' ||
+      window.location.pathname === '/NAC/DeleteAssets_1' ||
+      window.location.pathname === '/NAC/AddAssets_2' ||
+      window.location.pathname === '/NAC/ChangeAssets_2' ||
+      window.location.pathname === '/NAC/TransferAssets_2' ||
+      window.location.pathname === '/NAC/SealsAssets_2' ||
+      window.location.pathname === '/NAC/DeleteAssets_2'
+    ) {
+      window.location.href = localStorage.getItem('list_satatusNAC');
+    }
+  };
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
     reactJS_LaunchingMenu();
@@ -164,59 +177,58 @@ export default function ButtonAppBar() {
         <Toolbar>
           {['left'].map((anchor) => (
             <React.Fragment key={anchor}>
-              <IconButton
-                size="large"
-                edge="start"
-                color="inherit"
-                aria-label="menu"
-                onClick={toggleDrawer(anchor, true)}
-                sx={{ mr: 2 }}
-              >
-                <MenuIcon />
-              </IconButton>
+              <Tooltip title="Menu on">
+                <IconButton
+                  size="large"
+                  edge="start"
+                  color="inherit"
+                  aria-label="menu"
+                  onClick={toggleDrawer(anchor, true)}
+                  sx={{ mr: 2 }}
+                >
+                  <MenuIcon />
+                </IconButton>
+              </Tooltip>
               <Drawer
                 anchor={anchor}
                 open={state[anchor]}
                 onClose={toggleDrawer(anchor, false)}
               >
-                <DrawerHeader>
-                  <IconButton onClick={toggleDrawer(anchor, false)}>
-                    {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-                  </IconButton>
-                </DrawerHeader>
-                <Divider />
                 <Box
+                  elevation={0}
                   sx={{ width: '20rem !important' }}
                   role="presentation"
                 >
                   <FireNav component="nav" disablePadding>
                     <ListItem component="div" disablePadding>
-                      <ListItemButton sx={{ height: 56 }} component="a" href="#customized-list">
-                        <ListItemIcon sx={{ fontSize: 20 }}>🔥</ListItemIcon>
+                      <ListItemButton
+                        alignItems="center"
+                        sx={{ py: 2.5 }}
+                        onClick={() => navigate('/Home')}
+                      >
+                        <ListItemIcon>
+                          <HomeIcon sx={{ fontSize: '1.2rem !important' }} />
+                        </ListItemIcon>
                         <ListItemText
-                          sx={{ my: 0 }}
-                          primary="ReactJS"
+                          primary="HOME"
                           primaryTypographyProps={{
-                            fontSize: 20,
+                            fontSize: '1rem !important',
                             fontWeight: 'medium',
-                            letterSpacing: 0,
+                            lineHeight: '20px',
                           }}
                         />
                       </ListItemButton>
-                      <Tooltip title="Project Settings">
+                      <Tooltip title="Menu Off">
                         <IconButton
                           size="large"
+                          onClick={toggleDrawer(anchor, false)}
                           sx={{
                             '& svg': {
-                              color: 'rgba(255,255,255,0.8)',
                               transition: '0.2s',
                               transform: 'translateX(0) rotate(0)',
                             },
                             '&:hover, &:focus': {
                               bgcolor: 'unset',
-                              '& svg:first-of-type': {
-                                transform: 'translateX(-4px) rotate(-20deg)',
-                              },
                               '& svg:last-of-type': {
                                 right: 0,
                                 opacity: 1,
@@ -233,28 +245,12 @@ export default function ButtonAppBar() {
                             },
                           }}
                         >
-                          <Settings />
-                          <ArrowRight sx={{ position: 'absolute', right: 4, opacity: 0 }} />
+                          {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
                         </IconButton>
                       </Tooltip>
                     </ListItem>
-                    <Divider />
-                    <ListItemButton
-                      sx={{ height: 56 }}
-                      component="a"
-                      href="#customized-list"
-                      onClick={() => navigate('/Home')}
-                    >
-                      <ListItemIcon sx={{ fontSize: 20 }}>🏠</ListItemIcon>
-                      <ListItemText
-                        primary="HomePage Overview"
-                        primaryTypographyProps={{
-                          fontSize: 20,
-                          fontWeight: 'medium',
-                          letterSpacing: 0,
-                        }}
-                      />
-                    </ListItemButton>
+                  </FireNav>
+                  <FireNav component="nav" disablePadding>
                     <Divider />
                     {menuMain.map((res, index) => (
                       <Box
@@ -264,38 +260,50 @@ export default function ButtonAppBar() {
                         }}
                       >
                         <ListItemButton
-                          alignItems="flex-start"
+                          alignItems="center"
                           onClick={(e) => handleMenuMain(e, res, index)}
                           sx={{
                             px: 3,
                             pt: 2.5,
                             pb: (open && (menuState[0].systemid === res.systemid)) ? 0 : 2.5,
-                            '&:hover, &:focus': { '& svg': { opacity: (open && (menuState[0].systemid === res.systemid)) ? 1 : 0 } },
                           }}
                         >
+                          <ListItemIcon
+                            sx={{
+                              color: (open && (menuState[0].systemid === res.systemid)) ? 'rgba(255,165,000,1)' : null,
+                              mb: (open && (menuState[0].systemid === res.systemid)) ? 2.5 : 0
+                            }}
+                          >
+                            <SvgIcon sx={{ fontSize: '1.2rem !important' }}>
+                              <path d={res.emoji} />
+                            </SvgIcon>
+                          </ListItemIcon>
                           <ListItemText
                             primary={res.systemname}
                             primaryTypographyProps={{
-                              fontSize: 15,
+                              fontSize: '1rem !important',
                               fontWeight: 'medium',
                               lineHeight: '20px',
                               mb: '2px',
+                              color: (open && (menuState[0].systemid === res.systemid)) ? 'rgba(255,165,000,1)' : null,
                             }}
                             secondary={res.secondaryname}
                             secondaryTypographyProps={{
                               noWrap: true,
-                              fontSize: 12,
+                              fontSize: '0.8rem !important',
                               lineHeight: '16px',
-                              color: (open && (menuState[0].systemid === res.systemid)) ? 'rgba(0,0,0,0)' : 'rgba(255,255,255,0.5)',
+                              color: (open && (menuState[0].systemid === res.systemid)) ? 'rgba(255,165,000,0.5)' : 'rgba(255,255,255,0.5)',
+                              mb: (open && (menuState[0].systemid === res.systemid)) ? 2.5 : 0
                             }}
                             sx={{ my: 0 }}
                           />
                           <KeyboardArrowDown
                             sx={{
                               mr: -1,
-                              opacity: 0,
+                              opacity: (open && (menuState[0].systemid === res.systemid)) ? 1 : 0,
                               transform: (open && (menuState[0].systemid === res.systemid)) ? 'rotate(-180deg)' : 'rotate(0)',
                               transition: '0.2s',
+                              mb: (open && (menuState[0].systemid === res.systemid)) ? 2.5 : 0
                             }}
                           />
                         </ListItemButton>
@@ -304,7 +312,7 @@ export default function ButtonAppBar() {
                             <Box>
                               <ListItemButton
                                 key={resItem.primaryMenuName}
-                                sx={{ py: 0, minHeight: 32, color: 'rgba(255,255,255,.8)' }}
+                                sx={{ py: 0, minHeight: 32 }}
                                 onClick={(e) => {
                                   if (resItem.primaryTree === true) {
                                     handleMenuPrimary(e, resItem, itemIndex)
@@ -313,12 +321,15 @@ export default function ButtonAppBar() {
                                   }
                                 }}
                               >
-                                <ListItemIcon sx={{ color: 'inherit' }}>
+                                <ListItemIcon>
                                   <CircleIcon sx={{ fontSize: '0.5rem !important' }} />
                                 </ListItemIcon>
                                 <ListItemText
                                   primary={resItem.primaryMenuName}
-                                  primaryTypographyProps={{ fontSize: 14, fontWeight: 'medium' }}
+                                  primaryTypographyProps={{
+                                    fontSize: '0.9rem !important',
+                                    fontWeight: 'medium',
+                                  }}
                                 />
                                 <KeyboardArrowDown
                                   sx={{
@@ -334,15 +345,15 @@ export default function ButtonAppBar() {
                                   <Box sx={{ pl: 3 }}>
                                     <ListItemButton
                                       key={resItem.secondaryMenuName}
-                                      sx={{ py: 0, minHeight: 32, color: 'rgba(255,255,255,.8)' }}
+                                      sx={{ py: 0, minHeight: 32 }}
                                       onClick={() => navigate(resItem.MenuPath)}
                                     >
-                                      <ListItemIcon sx={{ color: 'inherit' }}>
-                                        <CheckBoxOutlineBlankIcon sx={{ fontSize: '0.5rem !important' }} />
+                                      <ListItemIcon>
+                                        <MenuIcon sx={{ fontSize: '0.5rem !important' }} />
                                       </ListItemIcon>
                                       <ListItemText
                                         primary={resItem.secondaryMenuName}
-                                        primaryTypographyProps={{ fontSize: 14, fontWeight: 'medium' }}
+                                        primaryTypographyProps={{ fontSize: '0.9rem !important', fontWeight: 'medium' }}
                                       />
                                       <KeyboardArrowDown
                                         sx={{
@@ -364,85 +375,114 @@ export default function ButtonAppBar() {
               </Drawer>
             </React.Fragment>
           ))}
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            <Button
-              sx={{ color: 'inherit', }}
-              uppercase={false}
-              onClick={() => window.location.href = '/Home'}
+          <Box sx={{ flexGrow: 1 }}>
+            <Grid
+              container
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
             >
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>Home Page</Typography>
-            </Button>
-          </Box>
-          <div size="large" aria-label="account of current user" aria-controls="menu-appbar" >
-            <Typography variant="h6" component="React.Fragment" sx={{ flexGrow: 1, pr: 2 }} className='scaled-480px-Header' >
-              <b>{data.name}</b>
-            </Typography>
-          </div>
-          {auth && (
-            <React.Fragment>
-              <Box sx={{ flexGrow: 0 }}>
-                <ThemeProvider
-                  theme={createTheme({
-                    components: {
-                      MuiListItemButton: {
-                        defaultProps: {
-                          disableTouchRipple: true,
-                        },
-                      },
-                    },
-                    palette: {
-                      mode: 'dark',
-                      primary: {
-                        main: '#1976d2',
-                      },
-                    },
-                  })}
+              <Grid item xs={7} md={9}>
+                <Button
+                  sx={{ color: 'inherit', }}
+                  uppercase={false}
+                  onClick={() => window.location.href = '/Home'}
                 >
-                  <IconButton
-                    size="small"
-                    aria-label="account of current user"
-                    aria-controls="menu-appbar"
-                    aria-haspopup="true"
-                    onClick={handleMenu}
-                    color="inherit"
-                  >
-                    <Avatar className='scaled-logo-TableContent scaled-480px-TableContent' sx={{ width: 18, height: 18 }}{...stringAvatar(data.UserCode)} />
+                  <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>Home Page</Typography>
+                </Button>
+              </Grid>
+              <Grid item xs={1} md={1}>
+                <Box
+                  alignItems="flex-end"
+                  sx={{
+                    display: (window.location.pathname === '/SMB/StartForms' ||
+                      window.location.pathname === '/SMB/FormUpdate' ||
+                      window.location.pathname === '/SMB/Payment' ||
+                      window.location.pathname === '/NAC/AddAssets_1' ||
+                      window.location.pathname === '/NAC/ChangeAssets_1' ||
+                      window.location.pathname === '/NAC/TransferAssets_1' ||
+                      window.location.pathname === '/NAC/SealsAssets_1' ||
+                      window.location.pathname === '/NAC/DeleteAssets_1' ||
+                      window.location.pathname === '/NAC/AddAssets_2' ||
+                      window.location.pathname === '/NAC/ChangeAssets_2' ||
+                      window.location.pathname === '/NAC/TransferAssets_2' ||
+                      window.location.pathname === '/NAC/SealsAssets_2' ||
+                      window.location.pathname === '/NAC/DeleteAssets_2') ? '' : 'none'
+                  }}
+                >
+                  <IconButton onClick={handleClickList}>
+                    <ArticleIcon sx={{ fontSize: '1.2rem !important' }} />
                   </IconButton>
-                  <Menu
-                    sx={{ mt: '45px' }}
-                    id="menu-appbar"
-                    anchorEl={anchorEl}
-                    anchorOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
-                    }}
-                    keepMounted
-                    transformOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
-                    }}
-                    open={Boolean(anchorEl)}
-                    onClose={handleClose}
-                  >
-                    <MenuItem disabled={data.DepCode === '101ITO' ? false : true} onClick={() => window.location.href = '/Permission_Pages'}>
-                      <ListItemIcon sx={{ minWidth: '15% !important', pr: 1 }}>
-                        <ManageAccountsIcon />
-                      </ListItemIcon>
-                      <ListItemText>Permission</ListItemText>
-                    </MenuItem>
-                    <MenuItem onClick={handleLogout}>
-                      <ListItemIcon sx={{ minWidth: '15% !important', pr: 1 }}>
-                        <LogoutIcon />
-                      </ListItemIcon>
-                      <ListItemText>Log Out</ListItemText>
-                    </MenuItem>
-                  </Menu>
-                </ThemeProvider>
-              </Box>
-            </React.Fragment>
-          )}
-        </Toolbar>
-      </AppBar>
+                </Box>
+              </Grid>
+              <Grid item xs={4} md={2}>
+                <Grid
+                  container
+                  direction="row"
+                  justifyContent="flex-end"
+                  alignItems="center"
+                >
+                  <Grid item>
+                    <div size="large" aria-label="account of current user" aria-controls="menu-appbar" >
+                      <Typography
+                        variant="h6"
+                        component="React.Fragment"
+                        sx={{ flexGrow: 1, pr: 2, display: { xs: 'none', md: 'flex' } }}
+                        className='scaled-480px-Header'
+                      >
+                        <b>{data.name}</b>
+                      </Typography>
+                    </div>
+                  </Grid>
+                  <Grid item>
+                    <IconButton
+                      size="small"
+                      aria-label="account of current user"
+                      aria-controls="menu-appbar"
+                      aria-haspopup="true"
+                      onClick={handleMenu}
+                      color="inherit"
+                    >
+                      <Avatar className='scaled-logo-TableContent scaled-480px-TableContent' sx={{ width: 18, height: 18 }}{...stringAvatar(data.UserCode)} />
+                    </IconButton>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Box>
+          {auth &&
+            <Menu
+              sx={{ mt: '45px' }}
+              id="menu-appbar"
+              anchorEl={anchorEl}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              <MenuItem disabled={data.DepCode === '101ITO' ? false : true} onClick={() => window.location.href = '/Permission_Pages'}>
+                <ListItemIcon sx={{ minWidth: '15% !important', pr: 1 }}>
+                  <ManageAccountsIcon />
+                </ListItemIcon>
+                <ListItemText>Permission</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={handleLogout}>
+                <ListItemIcon sx={{ minWidth: '15% !important', pr: 1 }}>
+                  <LogoutIcon />
+                </ListItemIcon>
+                <ListItemText>Log Out</ListItemText>
+              </MenuItem>
+            </Menu>
+          }
+        </Toolbar >
+      </AppBar >
       <Outlet />
     </ThemeProvider >
   );
